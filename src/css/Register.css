@@ -1,0 +1,7 @@
+.register-container {
+  max-width: 350px;
+  margin: 100px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
