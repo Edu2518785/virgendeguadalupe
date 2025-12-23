@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useNavigate } from "react-router-dom";
+import "../css/Home.css";
 
 function Home() {
   const [a, setA] = useState(null);
@@ -44,36 +45,46 @@ function Home() {
   if (!a) return <p>Cargando...</p>;
 
   return (
-    <div>
-      <button onClick={logout}>Cerrar sesión</button>
+    <div className="home-container">
+      <header className="home-header">
+        <div className="user-box">
+          <img src={a.fotoUrl} alt="Foto" />
+          <div>
+            <h2>{a.nombres} {a.apellidoPaterno}</h2>
+            <span>N° {a.numeroAsociado}</span>
+          </div>
+        </div>
 
-      <img src={a.fotoUrl} width="120" alt="Foto asociado" />
+        <button className="logout-btn" onClick={logout}>
+          Cerrar sesión
+        </button>
+      </header>
 
-      <p><b>DNI:</b> {a.dni}</p>
-      <p><b>N° Asociado:</b> {a.numeroAsociado}</p>
-      <p><b>Fecha Ingreso:</b> {a.fechaIngreso}</p>
+      <section className="cards-grid">
+        <div className="info-card"><b>DNI:</b> {a.dni}</div>
+        <div className="info-card"><b>Fecha Ingreso:</b> {a.fechaIngreso}</div>
+        <div className="info-card"><b>Fecha Nacimiento:</b> {a.fechaNacimiento}</div>
+        <div className="info-card"><b>Estado Civil:</b> {a.estadoCivil}</div>
+        <div className="info-card"><b>Grado Instrucción:</b> {a.gradoInstruccion}</div>
+        <div className="info-card"><b>Conviviente:</b> {a.conviviente}</div>
+        <div className="info-card"><b>Departamento:</b> {a.departamento}</div>
+        <div className="info-card"><b>Provincia:</b> {a.provincia}</div>
+        <div className="info-card"><b>Distrito:</b> {a.distrito}</div>
+      </section>
 
-      <p><b>Nombres:</b> {a.nombres}</p>
-      <p><b>Apellido Paterno:</b> {a.apellidoPaterno}</p>
-      <p><b>Apellido Materno:</b> {a.apellidoMaterno}</p>
+      <section className="hijos-section">
+        <h3>Hijos</h3>
 
-      <p><b>Fecha Nacimiento:</b> {a.fechaNacimiento}</p>
-      <p><b>Departamento:</b> {a.departamento}</p>
-      <p><b>Provincia:</b> {a.provincia}</p>
-      <p><b>Distrito:</b> {a.distrito}</p>
-
-      <p><b>Estado Civil:</b> {a.estadoCivil}</p>
-      <p><b>Grado Instrucción:</b> {a.gradoInstruccion}</p>
-      <p><b>Conviviente:</b> {a.conviviente}</p>
-
-      <h3>Hijos</h3>
-      {a.hijos?.length
-        ? a.hijos.map((h, i) => (
-            <p key={i}>
-              {h.nombre} - {h.edad} años - {h.estudios}
-            </p>
+        {a.hijos?.length ? (
+          a.hijos.map((h, i) => (
+            <div key={i} className="info-card">
+              {h.nombre} — {h.edad} años — {h.estudios}
+            </div>
           ))
-        : <p>No registra hijos</p>}
+        ) : (
+          <p>No registra hijos</p>
+        )}
+      </section>
     </div>
   );
 }

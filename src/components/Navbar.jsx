@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
+import "../css/Navbar.css";
 
 function Navbar({ rol }) {
   const navigate = useNavigate();
-  const userRol = rol || sessionStorage.getItem("rol"); // prioridad al rol que viene de Layout
+  const userRol = rol || sessionStorage.getItem("rol");
 
   const logout = () => {
     if (confirm("¿Seguro que deseas cerrar sesión?")) {
@@ -14,7 +15,7 @@ function Navbar({ rol }) {
   const can = (roles) => roles.includes(userRol);
 
   return (
-    <nav>
+    <nav className="navbar-fixed">
       <Link to="/home">Inicio</Link>
 
       {can(["administrador", "asistencia", "directiva", "asociado"]) && (
@@ -36,9 +37,10 @@ function Navbar({ rol }) {
       {can(["administrador", "asistencia", "directiva"]) && (
         <Link to="/asociados">Asociados</Link>
       )}
+
       {can(["administrador"]) && (
-  <Link to="/crear-asociado">Crear Asociado</Link>
-)}
+        <Link to="/crear-asociado">Crear Asociado</Link>
+      )}
 
       <button onClick={logout}>Cerrar sesión</button>
     </nav>

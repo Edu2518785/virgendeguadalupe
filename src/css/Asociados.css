@@ -1,0 +1,118 @@
+/* Contenedor Principal */
+.asociados-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at top left, #b2ebf2, #e0f2f1, #a7ffeb);
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+    overflow-y: auto;
+}
+
+/* Panel Oscuro Superior (Filtros) */
+.filtros-asociados {
+    background-color: #1a1a1a;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    color: white;
+}
+
+/* Grid de Tarjetas de Asociados */
+.grid-asociados {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    padding-bottom: 30px;
+}
+
+/* Tarjeta Individual Estilo Blanco */
+.card-asociado {
+    background-color: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.card-asociado:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.card-asociado.active {
+    border: 2px solid #10b981;
+}
+
+/* Cabecera de la Tarjeta */
+.card-asociado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.badge-numero {
+    background-color: #1a1a1a;
+    color: #10b981;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.nombre-asociado {
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Detalles Expandibles */
+.detalle-asociado {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.info-box {
+    margin-bottom: 8px;
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Badge de Deuda */
+.deuda-badge {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+.con-deuda { background-color: #fee2e2; color: #991b1b; }
+.sin-deuda { background-color: #d1fae5; color: #065f46; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

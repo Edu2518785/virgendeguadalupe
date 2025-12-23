@@ -1,0 +1,39 @@
+.deuda-container {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5); /* fondo naranja suave */
+  min-height: calc(100vh - 60px); /* altura ajustada al navbar fijo */
+  margin-top: 60px; /* espacio para navbar */
+  padding: 30px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Título */
+.deuda-container h2 {
+  color: #c2410c; /* naranja oscuro */
+  font-size: 32px;
+  margin-bottom: 25px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Información de deuda */
+.deuda-container p {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #78350f;
+  line-height: 1.5;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: default;
+}
+
+.deuda-container p:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}

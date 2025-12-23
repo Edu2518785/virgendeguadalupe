@@ -2,6 +2,7 @@ import { useOutletContext } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../services/firebase";
+import "../css/Deuda.css"; // Importamos CSS específico
 
 function Deuda() {
   const user = useOutletContext(); // usuario logueado
@@ -30,23 +31,23 @@ function Deuda() {
   if (!user || loading) return <p>Cargando...</p>;
 
   return (
-    <div>
+    <div className="deuda-container">
       <h2>Estado de Deuda</h2>
 
       <p>
         <strong>Deuda:</strong>{" "}
-        {user.deuda ? user.deuda : "Felicidades no cuentas con ninguna deuda personal😊"}
+        {user.deuda ? user.deuda : "Felicidades, no cuentas con ninguna deuda personal 😊"}
       </p>
 
       <p>
         <strong>Colecta general:</strong>{" "}
         {deudaGlobal.length > 0 && deudaGlobal.some(d => d.monto)
-        ? deudaGlobal
-        .filter(d => d.monto) // solo los que tienen monto
-        .map(d => d.monto)
-        .join(" / ")
-    : "Por el momento no se solicita ningun tipo colecta general 😊"}
-</p>
+          ? deudaGlobal
+              .filter(d => d.monto)
+              .map(d => d.monto)
+              .join(" / ")
+          : "Por el momento no se solicita ningún tipo de colecta general 😊"}
+      </p>
     </div>
   );
 }

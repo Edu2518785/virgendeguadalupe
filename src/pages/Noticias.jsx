@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../services/firebase";
-
+import "../pages/Noticias.jsx";
+import "../css/Noticias.css"
 function Noticias() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +10,7 @@ function Noticias() {
   useEffect(() => {
     const fetchNoticias = async () => {
       try {
-        const snap = await getDocs(collection(db, "noticias")); // tu colección
+        const snap = await getDocs(collection(db, "noticias"));
         const noticiasData = snap.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -29,11 +30,11 @@ function Noticias() {
   if (noticias.length === 0) return <p>No hay noticias disponibles.</p>;
 
   return (
-    <div>
+    <div className="noticias-container">
       <h2>Noticias</h2>
       <ul>
         {noticias.map((n) => (
-          <li key={n.id}>{n.titulo}</li> // mostramos el campo "titulo"
+          <li key={n.id}>{n.titulo}</li>
         ))}
       </ul>
     </div>
