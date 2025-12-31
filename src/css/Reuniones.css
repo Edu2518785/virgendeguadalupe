@@ -1,216 +1,159 @@
-/* =========================================
-   CONTENEDOR PRINCIPAL (FONDO DIFUMINADO)
-   ========================================= */
-.reuniones-container {
-    display: flex;
-    gap: 20px;
-    padding: 25px;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle at top left, #b2ebf2, #e0f2f1, #a7ffeb);
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+.reu-page-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  height: calc(100vh - 70px);
+  background: #f0fdfa; /* Fondo suave para que resalten los cuadros */
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* =========================================
-   PANELES OSCUROS (ESTILO MODERNO)
-   ========================================= */
-.sidebar, .contenido {
-    background-color: #1a1a1a; /* Fondo oscuro de la imagen */
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    color: white;
-    display: flex;
-    flex-direction: column;
+/* --- CUADROS OSCUROS --- */
+.reu-card-left, .reu-card-right {
+  background: #111827; /* Gris muy oscuro, casi negro */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  color: white;
 }
 
-.sidebar {
-    width: 320px;
-    gap: 15px;
+.reu-card-left { width: 300px; }
+.reu-card-right { flex: 1; overflow: hidden; }
+
+/* --- BOTONES Y ENTRADAS --- */
+.reu-btn-primary {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: 0.2s;
 }
 
-.contenido {
-    flex: 1;
-    gap: 20px;
-    overflow: hidden; /* Evita que el panel crezca infinito */
+.reu-btn-primary:hover { background: #047857; }
+
+.reu-input-dark {
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* =========================================
-   BOTONES (DARK & GREEN GRADIENT)
-   ========================================= */
-.btn-principal {
-    background-color: #262626;
-    color: white;
-    border: 1px solid #333;
-    padding: 12px 18px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
+.reu-input-small { width: 180px; }
+
+/* --- LISTA DE REUNIONES --- */
+.reu-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+  overflow-y: auto;
 }
 
-.btn-principal:hover {
-    background-color: #333;
-    border-color: #444;
+.reu-list-item {
+  background: #1f2937;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: 0.2s;
 }
 
-.btn-principal:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.reu-list-item:hover { border-color: #059669; }
+.reu-list-item.is-selected { background: #059669; color: white; }
+
+.reu-status-tag {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  margin-left: 10px;
+}
+.reu-status-tag.is-open { background: #065f46; color: #dcfce7; }
+.reu-status-tag.is-closed { background: #374151; color: #d1d5db; }
+
+/* --- TABLA MODERNA --- */
+.reu-table-container {
+  background: white;
+  border-radius: 12px;
+  flex: 1;
+  overflow-y: auto;
+  margin: 15px 0;
 }
 
-/* Botón Guardar (Verde) */
-.btn-guardar {
-    background: linear-gradient(90deg, #10b981, #059669);
-    border: none;
-    color: white;
+.reu-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #1f2937;
 }
 
-/* =========================================
-   INPUTS DE BÚSQUEDA
-   ========================================= */
-.input-busqueda {
-    background-color: #2b2b2b;
-    border: 1px solid #3d3d3d;
-    padding: 12px 15px;
-    border-radius: 10px;
-    color: white;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.2s;
+.reu-table th {
+  background: #f9fafb;
+  padding: 15px;
+  text-align: left;
+  font-size: 0.8rem;
+  color: #6b7280;
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
 }
 
-.input-busqueda:focus {
-    border-color: #10b981;
+.reu-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f3f4f6;
 }
 
-/* =========================================
-   LISTA LATERAL DE REUNIONES
-   ========================================= */
-.lista-reuniones {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    overflow-y: auto;
-    flex: 1;
+/* --- ESTADOS (COLORES) --- */
+.reu-badge, .reu-select-state {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-.item-reunion {
-    background-color: #262626;
-    padding: 14px;
-    margin-bottom: 10px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.3s;
-    text-align: left;
-    border: 1px solid transparent;
-    font-size: 0.95rem;
+.state-puntual { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.state-tarde { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+.state-falta { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* --- OTROS --- */
+.reu-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #374151;
+  padding-bottom: 15px;
 }
 
-.item-reunion:hover {
-    background-color: #2d2d2d;
+.reu-header-actions { display: flex; gap: 10px; }
+
+.reu-btn-edit { background: #374151; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+
+.reu-btn-close-final {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-/* EFECTO SELECCIONADO (Verde de la imagen) */
-.item-reunion.selected {
-    background: linear-gradient(90deg, #10b981, #059669);
-    color: white;
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+.reu-no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #9ca3af;
 }
 
-/* =========================================
-   CABECERA DEL CONTENIDO (TÍTULO Y BUSCADOR)
-   ========================================= */
-.header-seccion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #333;
-    gap: 15px;
-}
-
-.acciones-header {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-/* =========================================
-   TABLA DE ASISTENCIA (ESTILO BLANCO LIMPIO)
-   ========================================= */
-.tabla-container {
-    background-color: white; /* Contraste blanco como la imagen */
-    border-radius: 15px;
-    padding: 5px;
-    color: #333;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.tabla-asistencia {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.tabla-asistencia th {
-    text-align: left;
-    padding: 15px;
-    background-color: #f8f9fa;
-    color: #666;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: sticky;
-    top: 0;
-}
-
-.tabla-asistencia td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.95rem;
-}
-
-.tabla-asistencia tr:hover {
-    background-color: #fcfcfc;
-}
-
-/* =========================================
-   SELECTS Y BADGES DE ESTADO
-   ========================================= */
-.select-estado {
-    background-color: #1a1a1a;
-    color: white;
-    border-radius: 8px;
-    padding: 6px 10px;
-    border: none;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.badge-estado {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
-.badge-estado.puntual { background-color: #d1fae5; color: #065f46; }
-.badge-estado.tarde   { background-color: #fef3c7; color: #92400e; }
-.badge-estado.falta   { background-color: #fee2e2; color: #991b1b; }
-
-/* =========================================
-   ESTADOS VACÍOS
-   ========================================= */
-.no-selection {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #666;
-    font-style: italic;
-}
+.reu-placeholder-icon { font-size: 4rem; margin-bottom: 10px; }

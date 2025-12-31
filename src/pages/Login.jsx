@@ -1,13 +1,17 @@
+// Login.jsx (MISMA FUNCIONALIDAD – SOLO MENSAJE GENÉRICO)
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebase";
+import "../css/Login.css";
 
 function Login() {
   const [dni, setDni] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const GENERIC_ERROR = "DNI o contraseña incorrectos";
 
   const handleLogin = async () => {
     setError("");
@@ -18,31 +22,49 @@ function Login() {
     }
 
     if (dni.length !== 8) {
-      setError("DNI inválido");
+      setError(GENERIC_ERROR);
       return;
     }
 
     try {
-      const q = query(
+      // 1️⃣ Verificar que el DNI exista en ASOCIADOS
+      const qAsociado = query(
         collection(db, "asociados"),
         where("dni", "==", dni)
       );
 
-      const querySnapshot = await getDocs(q);
+      const asociadoSnap = await getDocs(qAsociado);
 
-      if (querySnapshot.empty) {
-        setError("DNI no registrado");
+      if (asociadoSnap.empty) {
+        setError(GENERIC_ERROR);
         return;
       }
 
-      // 🔐 validación básica de contraseña (simulada)
-      if (password.length < 6) {
-        setError("Contraseña incorrecta");
+      // 2️⃣ Verificar que el usuario esté registrado (usuariosNuevos)
+      const qUsuario = query(
+        collection(db, "usuariosNuevos"),
+        where("dni", "==", dni)
+      );
+
+      const usuarioSnap = await getDocs(qUsuario);
+
+      if (usuarioSnap.empty) {
+        setError(GENERIC_ERROR);
         return;
       }
 
+      const usuarioData = usuarioSnap.docs[0].data();
+
+      // 3️⃣ Validar contraseña real
+      if (usuarioData.password !== password) {
+        setError(GENERIC_ERROR);
+        return;
+      }
+
+      // 4️⃣ Login exitoso
       sessionStorage.setItem("logged", "true");
       sessionStorage.setItem("dni", dni);
+      sessionStorage.setItem("numeroAsociado", usuarioData.numeroAsociado);
 
       navigate("/home", { replace: true });
 
@@ -53,29 +75,31 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Iniciar sesión</h2>
+    <div className="login-wrapper">
+      <div className="login-card">
+        <h2>Iniciar sesión</h2>
 
-      <input
-        placeholder="DNI"
-        value={dni}
-        onChange={(e) => setDni(e.target.value)}
-      />
+        <input
+          placeholder="DNI"
+          value={dni}
+          onChange={(e) => setDni(e.target.value)}
+        />
 
-      <input
-        type="password"
-        placeholder="Contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="login-error">{error}</p>}
 
-      <button onClick={handleLogin}>Ingresar</button>
+        <button onClick={handleLogin}>Ingresar</button>
 
-      <p>
-        ¿Usuario nuevo? <Link to="/register">Regístrate</Link>
-      </p>
+        <p className="login-footer">
+          ¿Usuario nuevo? <Link to="/register">Regístrate</Link>
+        </p>
+      </div>
     </div>
   );
 }

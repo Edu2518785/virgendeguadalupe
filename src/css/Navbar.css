@@ -1,43 +1,140 @@
-.navbar-fixed {
-  position: fixed;
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky;
   top: 0;
-  left: 0;
   width: 100%;
-  background-color: #1e40af; /* azul oscuro, cambia si quieres */
-  color: #fff;
-  display: flex;
-  align-items: center;
-  padding: 10px 20px;
-  gap: 15px;
+  background: #1e40af;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-.navbar-fixed a {
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  color: white;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+/* ===== LINKS Desktop ===== */
+.nav-links-desktop {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nav-links-desktop a {
   color: #fff;
   text-decoration: none;
   font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
 }
 
-.navbar-fixed a:hover {
-  text-decoration: underline;
+.nav-links-desktop a:hover,
+.nav-links-desktop a.active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-.navbar-fixed button {
-  margin-left: auto;
-  padding: 5px 10px;
-  background-color: #ef4444;
+/* ===== LOGOUT ===== */
+.logout-btn {
+  background: #dc2626;
+  color: white;
   border: none;
-  color: #fff;
-  border-radius: 4px;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
-.navbar-fixed button:hover {
-  background-color: #b91c1c;
+.logout-btn:hover {
+  background: #b91c1c;
 }
 
-/* Para que el contenido no quede oculto debajo del navbar */
-body, #root {
-  padding-top: 60px; /* iguala la altura del navbar */
+/* ===== HAMBURGUESA ===== */
+.hamburger {
+  display: none; 
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  z-index: 1200; /* Por encima de la sidebar */
+}
+
+.hamburger span {
+  width: 28px;
+  height: 3px;
+  background: white;
+  border-radius: 3px;
+  transition: all 0.3s;
+}
+
+/* ===== SIDEBAR (Oculta por defecto en Desktop) ===== */
+.sidebar {
+  display: none;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 900px) {
+  .nav-links-desktop {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .sidebar {
+    display: flex; /* Se activa en mobile */
+    position: fixed;
+    top: 0;
+    left: -280px; /* Cambiado a la izquierda según tu imagen */
+    width: 260px;
+    height: 100vh;
+    background: #1a1a1a; /* Color oscuro como en tu captura */
+    flex-direction: column;
+    padding: 80px 20px;
+    gap: 15px;
+    transition: left 0.3s ease;
+    z-index: 1100;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.5);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar a {
+    color: #94a3b8; /* Gris azulado */
+    text-decoration: none;
+    font-weight: 500;
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .sidebar a:hover,
+  .sidebar a.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #3b82f6; /* Azul brillante al activar */
+  }
+
+  .sidebar .logout-btn {
+    margin-top: 20px;
+    width: 100%;
+  }
+}
+
+/* ===== OVERLAY ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1050;
 }

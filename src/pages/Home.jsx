@@ -54,10 +54,6 @@ function Home() {
             <span>N° {a.numeroAsociado}</span>
           </div>
         </div>
-
-        <button className="logout-btn" onClick={logout}>
-          Cerrar sesión
-        </button>
       </header>
 
       <section className="cards-grid">
