@@ -1,63 +1,68 @@
-/* Reset básico */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #f0fdf4, #d1fae5); /* verde suave */
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Contenedor principal de reglas */
-.reglas-container {
-  min-height: calc(100vh - 60px);
-  padding: 30px 20px;
+* {
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 60px; /* espacio para navbar fijo */
 }
 
-/* Título */
+/* ================= CONTENEDOR GENERAL ================= */
+.reglas-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  color: #0f172a;
+}
+
+/* ================= TÍTULO ================= */
 .reglas-container h2 {
-  margin-bottom: 30px;
-  color: #047857; /* verde oscuro */
-  font-size: 32px;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 26px;
 }
 
-/* Lista de reglas */
+/* ================= LISTA ================= */
 .reglas-container ul {
   list-style: none;
   padding: 0;
-  width: 100%;
-  max-width: 700px;
+  margin: 0;
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
 }
 
-/* Cada regla */
+/* ================= ITEM REGLA ================= */
 .reglas-container li {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
-  cursor: pointer;
-  font-size: 18px;
-  color: #065f46;
-  line-height: 1.5;
+  background: white;
+  padding: 22px 24px;
+  border-radius: 18px;
+
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+  font-weight: 600;
+  font-size: 15px;
+
+  transition: all 0.25s ease;
 }
 
+/* hover elegante */
 .reglas-container li:hover {
-  transform: translateY(-5px) scale(1.03);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  transform: translateY(-6px);
+  box-shadow: 0 22px 45px rgba(0,0,0,0.14);
 }
 
-/* Mensajes de carga o vacío */
+/* ================= MENSAJES ================= */
 .reglas-container p {
-  color: #065f46;
-  font-size: 20px;
-  text-align: center;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .reglas-container h2 {
+    font-size: 20px;
+  }
 }

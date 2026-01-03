@@ -1,118 +1,151 @@
-/* Contenedor Principal */
+/* ================= CONTENEDOR PRINCIPAL ================= */
 .asociados-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 25px;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle at top left, #b2ebf2, #e0f2f1, #a7ffeb);
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-    overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+
+  /* 🔑 CLAVES */
+  min-height: calc(100vh - 70px); /* respeta navbar */
+  height: auto;
+  width: 100%;
+
+  /* 🔑 deja ver el fondo global (imagen o gradiente) */
+  background: transparent;
+
+  box-sizing: border-box;
+  font-family: "Inter", system-ui, sans-serif;
+
+  overflow-y: visible;
 }
 
-/* Panel Oscuro Superior (Filtros) */
+/* ================= FILTROS ================= */
 .filtros-asociados {
-    background-color: #1a1a1a;
-    border-radius: 20px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    color: white;
+  background: rgba(26, 26, 26, 0.92);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  color: white;
 }
 
-/* Grid de Tarjetas de Asociados */
+/* ================= GRID ASOCIADOS ================= */
 .grid-asociados {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-    padding-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+
+  /* 🔑 permite crecer y scrollear */
+  padding-bottom: 40px;
 }
 
-/* Tarjeta Individual Estilo Blanco */
+/* ================= TARJETA ================= */
 .card-asociado {
-    background-color: white;
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border: 2px solid transparent;
 }
 
 .card-asociado:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.15);
 }
 
 .card-asociado.active {
-    border: 2px solid #10b981;
+  border-color: #10b981;
 }
 
-/* Cabecera de la Tarjeta */
+/* ================= HEADER TARJETA ================= */
 .card-asociado-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .badge-numero {
-    background-color: #1a1a1a;
-    color: #10b981;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 0.9rem;
+  background: #111827;
+  color: #10b981;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .nombre-asociado {
-    color: #1a1a1a;
-    font-weight: 700;
-    font-size: 1.1rem;
+  color: #111827;
+  font-weight: 700;
+  font-size: 1.05rem;
 }
 
-/* Detalles Expandibles */
+/* ================= DETALLES ================= */
 .detalle-asociado {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    animation: fadeIn 0.3s ease;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  animation: fadeIn 0.3s ease;
 }
 
 .info-box {
-    margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .info-label {
-    display: block;
-    font-size: 0.75rem;
-    color: #888;
-    text-transform: uppercase;
-    font-weight: bold;
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 700;
 }
 
 .info-value {
-    font-size: 0.95rem;
-    color: #333;
-    font-weight: 500;
+  font-size: 0.95rem;
+  color: #1f2937;
+  font-weight: 500;
 }
 
-/* Badge de Deuda */
+/* ================= DEUDA ================= */
 .deuda-badge {
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.75rem;
 }
-.con-deuda { background-color: #fee2e2; color: #991b1b; }
-.sin-deuda { background-color: #d1fae5; color: #065f46; }
 
+.con-deuda {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sin-deuda {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* ================= ANIMACIÓN ================= */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .detalle-asociado {
+    grid-template-columns: 1fr;
+  }
 }

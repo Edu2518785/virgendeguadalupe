@@ -1,39 +1,57 @@
-.deuda-container {
-  background: linear-gradient(135deg, #fff7ed, #ffedd5); /* fondo naranja suave */
-  min-height: calc(100vh - 60px); /* altura ajustada al navbar fijo */
-  margin-top: 60px; /* espacio para navbar */
-  padding: 30px 20px;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-/* Título */
+/* ================= CONTENEDOR GENERAL ================= */
+.deuda-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  color: #0f172a;
+}
+
+/* ================= TÍTULO ================= */
 .deuda-container h2 {
-  color: #c2410c; /* naranja oscuro */
-  font-size: 32px;
-  margin-bottom: 25px;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 26px;
 }
 
-/* Información de deuda */
+/* ================= BLOQUES DE INFO ================= */
 .deuda-container p {
-  background-color: #ffffff;
-  width: 100%;
-  max-width: 600px;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-  font-size: 18px;
-  color: #78350f;
+  background: white;
+  padding: 22px 24px;
+  border-radius: 18px;
+
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+  font-size: 15px;
+  font-weight: 500;
+
+  margin-bottom: 18px;
   line-height: 1.5;
-  transition: transform 0.3s, box-shadow 0.3s;
-  cursor: default;
 }
 
-.deuda-container p:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+/* ================= TEXTO DESTACADO ================= */
+.deuda-container strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ================= ESTADOS ================= */
+.deuda-container p:last-child {
+  margin-bottom: 0;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .deuda-container h2 {
+    font-size: 20px;
+  }
+
+  .deuda-container {
+    padding: 24px 18px 50px;
+  }
 }

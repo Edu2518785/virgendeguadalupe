@@ -4,40 +4,42 @@ import { db } from "../services/firebase";
 import "../css/Reglas.css"
 
 function Reglas() {
-  const [reglas, setReglas] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [reglas, setReglas] = useState([]);
+const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchReglas = async () => {
-      try {
+    try {
         const snap = await getDocs(collection(db, "reglas")); // tu colección
         const reglasData = snap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
+        id: doc.id,
+        ...doc.data(),
         }));
         setReglas(reglasData);
-      } catch (error) {
+    } catch (error) {
         console.error("Error cargando reglas:", error);
-      } finally {
+    } finally {
         setLoading(false);
-      }
+    }
     };
 
     fetchReglas();
-  }, []);
+}, []);
 
-  if (loading) return <p>Cargando reglas...</p>;
-  if (reglas.length === 0) return <p>No hay reglas disponibles.</p>;
+if (loading) return <p>Cargando reglas...</p>;
+if (reglas.length === 0) return <p>No hay reglas disponibles.</p>;
 
-  return (
-  <div className="reglas-container">
+return (
+<div className="reglas-container">
     <h2>Reglas de la Asociación</h2>
     <ul>
-      {reglas.map((r) => (
-        <li key={r.id}>{r.titulo}</li>
-      ))}
+    {reglas.map((r) => (
+        <li key={r.id} style={{ whiteSpace: "pre-line", marginBottom: "15px" }}>
+            {r.titulo}
+        </li>
+    ))}
     </ul>
-  </div>
+</div>
 );
 }
 

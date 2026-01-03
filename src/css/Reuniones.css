@@ -1,92 +1,133 @@
+/* ================= CONTENEDOR PRINCIPAL ================= */
 .reu-page-container {
   display: flex;
-  gap: 20px;
-  padding: 20px;
-  height: calc(100vh - 70px);
-  background: #f0fdfa; /* Fondo suave para que resalten los cuadros */
+  gap: 24px;
+  padding: 24px;
+
+  /* 🔑 CLAVE: permite crecer y scrollear */
+  min-height: calc(100vh - 70px);
+  height: auto;
+
+  /* 🔑 CLAVE: deja ver la imagen de fondo global */
+  background: transparent;
+
   box-sizing: border-box;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
-/* --- CUADROS OSCUROS --- */
-.reu-card-left, .reu-card-right {
-  background: #111827; /* Gris muy oscuro, casi negro */
-  border-radius: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+/* ================= TARJETAS ================= */
+.reu-card-left,
+.reu-card-right {
+  background: rgba(17, 24, 39, 0.92); /* oscuro pero translúcido */
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   padding: 20px;
   color: white;
 }
 
-.reu-card-left { width: 300px; }
-.reu-card-right { flex: 1; overflow: hidden; }
+.reu-card-left {
+  width: 300px;
+  flex-shrink: 0;
+}
 
-/* --- BOTONES Y ENTRADAS --- */
+.reu-card-right {
+  flex: 1;
+  min-height: 500px;
+}
+
+/* ================= BOTONES ================= */
 .reu-btn-primary {
   background: #059669;
   color: white;
   border: none;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 15px;
-  transition: 0.2s;
+  margin-bottom: 16px;
+  transition: background 0.2s, transform 0.1s;
 }
 
-.reu-btn-primary:hover { background: #047857; }
+.reu-btn-primary:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
 
+/* ================= INPUTS ================= */
 .reu-input-dark {
   background: #1f2937;
   border: 1px solid #374151;
   color: white;
-  padding: 10px 15px;
-  border-radius: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.reu-input-small { width: 180px; }
+.reu-input-small {
+  width: 180px;
+}
 
-/* --- LISTA DE REUNIONES --- */
+/* ================= LISTA DE REUNIONES ================= */
 .reu-list {
   list-style: none;
   padding: 0;
-  margin-top: 15px;
+  margin-top: 16px;
+
+  /* 🔑 scroll interno solo si hace falta */
+  max-height: 420px;
   overflow-y: auto;
 }
 
 .reu-list-item {
   background: #1f2937;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
   cursor: pointer;
   border: 1px solid transparent;
   transition: 0.2s;
 }
 
-.reu-list-item:hover { border-color: #059669; }
-.reu-list-item.is-selected { background: #059669; color: white; }
+.reu-list-item:hover {
+  border-color: #059669;
+}
 
+.reu-list-item.is-selected {
+  background: #059669;
+  color: white;
+}
+
+/* ================= TAG ESTADO ================= */
 .reu-status-tag {
   font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
   text-transform: uppercase;
   margin-left: 10px;
 }
-.reu-status-tag.is-open { background: #065f46; color: #dcfce7; }
-.reu-status-tag.is-closed { background: #374151; color: #d1d5db; }
 
-/* --- TABLA MODERNA --- */
+.reu-status-tag.is-open {
+  background: #065f46;
+  color: #dcfce7;
+}
+
+.reu-status-tag.is-closed {
+  background: #374151;
+  color: #d1d5db;
+}
+
+/* ================= TABLA ================= */
 .reu-table-container {
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
+  margin: 20px 0;
+
+  /* 🔑 deja crecer y no encierra */
   flex: 1;
-  overflow-y: auto;
-  margin: 15px 0;
+  overflow: auto;
 }
 
 .reu-table {
@@ -97,56 +138,83 @@
 
 .reu-table th {
   background: #f9fafb;
-  padding: 15px;
+  padding: 14px;
   text-align: left;
   font-size: 0.8rem;
   color: #6b7280;
   border-bottom: 2px solid #e5e7eb;
   position: sticky;
   top: 0;
+  z-index: 1;
 }
 
 .reu-table td {
-  padding: 12px 15px;
+  padding: 12px 14px;
   border-bottom: 1px solid #f3f4f6;
 }
 
-/* --- ESTADOS (COLORES) --- */
-.reu-badge, .reu-select-state {
+/* ================= BADGES ================= */
+.reu-badge,
+.reu-select-state {
   padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
-.state-puntual { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.state-tarde { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
-.state-falta { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.state-puntual {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
 
-/* --- OTROS --- */
+.state-tarde {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.state-falta {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ================= HEADER DETALLE ================= */
 .reu-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 14px;
   border-bottom: 1px solid #374151;
-  padding-bottom: 15px;
 }
 
-.reu-header-actions { display: flex; gap: 10px; }
+.reu-header-actions {
+  display: flex;
+  gap: 10px;
+}
 
-.reu-btn-edit { background: #374151; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+.reu-btn-edit {
+  background: #374151;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
 
 .reu-btn-close-final {
   background: #dc2626;
   color: white;
   border: none;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 14px;
+  border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 
+/* ================= SIN SELECCIÓN ================= */
 .reu-no-selection {
   display: flex;
   flex-direction: column;
@@ -156,4 +224,18 @@
   color: #9ca3af;
 }
 
-.reu-placeholder-icon { font-size: 4rem; margin-bottom: 10px; }
+.reu-placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 10px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .reu-page-container {
+    flex-direction: column;
+  }
+
+  .reu-card-left {
+    width: 100%;
+  }
+}

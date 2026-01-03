@@ -208,8 +208,8 @@ return (
                     </button>
                   ) : (
                     <div className="reu-edit-group">
-                      <button className="reu-btn-save" onClick={guardarCambios}>Guardar</button>
-                      <button className="reu-btn-cancel" onClick={cancelarEdicion}>Cancelar</button>
+                      <button type="button" className="reu-btn-save" onClick={guardarCambios}>Guardar</button>
+                      <button type="button" className="reu-btn-cancel" onClick={cancelarEdicion}>Cancelar</button>
                     </div>
                   )
                 )}
