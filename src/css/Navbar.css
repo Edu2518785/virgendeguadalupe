@@ -5,7 +5,7 @@
   z-index: 1000;
   display: flex;
   justify-content: center;
-  pointer-events: none; /* permite que solo el contenido sea clickeable */
+  /* pointer-events: none; <- eliminado para que sidebar funcione */
 }
 
 /* ===== CONTENEDOR FLOTANTE ===== */
@@ -16,10 +16,8 @@
   display: flex;
   align-items: center;
   gap: 22px;
-
   border-radius: 999px; /* forma pill */
   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-
   max-width: max-content;
 }
 
@@ -92,6 +90,7 @@
 /* ===== SIDEBAR (mobile) ===== */
 .sidebar {
   display: none;
+  pointer-events: auto; /* asegurar que se puedan clicar los links */
 }
 
 /* ===== MOBILE ===== */
@@ -137,6 +136,7 @@
     padding: 12px;
     border-radius: 10px;
     transition: background 0.2s;
+    pointer-events: auto; /* asegurar que sean clickeables */
   }
 
   .sidebar a:hover,
@@ -149,6 +149,7 @@
     margin-top: 20px;
     width: 100%;
     border-radius: 12px;
+    pointer-events: auto;
   }
 }
 
@@ -158,4 +159,5 @@
   inset: 0;
   background: rgba(0,0,0,0.6);
   z-index: 1050;
+  pointer-events: auto; /* asegurar que se pueda clicar para cerrar el menu */
 }

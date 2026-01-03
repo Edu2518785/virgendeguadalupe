@@ -50,7 +50,8 @@ function Home() {
         <div className="user-box">
           <img src={a.fotoUrl} alt="Foto" />
           <div>
-            <h2>{a.nombres} {a.apellidoPaterno}</h2>
+            <h1>{a.nombres} {a.apellidoPaterno} {a.apellidoMaterno}</h1>
+            <h2>Numero de Asociado</h2>
             <span>N° {a.numeroAsociado}</span>
           </div>
         </div>

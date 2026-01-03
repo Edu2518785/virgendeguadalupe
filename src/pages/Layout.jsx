@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../services/firebase";
 import Navbar from "../components/Navbar";
+import AuthChecker from "../components/AuthChecker";
 
 function Layout() {
   const [user, setUser] = useState(null);
@@ -26,6 +27,9 @@ function Layout() {
 
   return (
     <>
+      {/* Componente que verifica si el usuario sigue existiendo */}
+      <AuthChecker dni={user.dni} />
+
       <Navbar rol={user.rol} />
       <Outlet context={user} />
     </>
