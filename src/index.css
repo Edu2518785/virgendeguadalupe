@@ -36,7 +36,7 @@ body {
   min-height: 100vh;
 
   /* 🖼️ IMAGEN DE FONDO GLOBAL */
-  background-image: url("/src/assets/Fondo1.jpg"); /* 👈 AQUÍ TU FOTO */
+  background-image: url("/src/assets/FondoGif.gif"); /* 👈 AQUÍ TU FOTO */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

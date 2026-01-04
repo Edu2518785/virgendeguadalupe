@@ -1,6 +1,5 @@
-// src/components/AuthChecker.jsx
 import { useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db } from "../services/firebase";
 
@@ -8,28 +7,25 @@ function AuthChecker({ dni }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!dni) {
-      navigate("/login", { replace: true });
-      return;
-    }
+    if (!dni) return;
 
-    // Check periódico cada 60 segundos
-    const interval = setInterval(async () => {
-      try {
-        const docRef = doc(db, "asociados", dni);
-        const docSnap = await getDoc(docRef);
+    // Referencia a la colección completa
+    const colRef = collection(db, "asociados");
 
-        if (!docSnap.exists()) {
-          // Usuario eliminado → cerrar sesión
-          sessionStorage.clear();
-          navigate("/login", { replace: true });
-        }
-      } catch (err) {
-        console.error("Error comprobando usuario:", err);
+    // Query para encontrar el documento con ese DNI
+    const q = query(colRef, where("dni", "==", dni));
+
+    // Listener en tiempo real
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (querySnapshot.empty) {
+        // ⚡ Solo si ya no existe el usuario
+        sessionStorage.clear();
+        navigate("/login", { replace: true });
       }
-    }, 60000); // 60 segundos, puedes ajustar
+      // ⚡ Si existe, no hacer nada
+    });
 
-    return () => clearInterval(interval);
+    return () => unsubscribe();
   }, [dni, navigate]);
 
   return null;
