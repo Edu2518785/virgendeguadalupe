@@ -1,8 +1,6 @@
-// Login.jsx (MISMA FUNCIONALIDAD – SOLO MENSAJE GENÉRICO)
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../services/firebase";
+import { loginFirebaseUser, getAsociadoByDNI, getUsuarioByDNI } from "../services/firebase";
 import "../css/Login.css";
 
 function Login() {
@@ -27,41 +25,35 @@ function Login() {
     }
 
     try {
-      // 1️⃣ Verificar que el DNI exista en ASOCIADOS
-      const qAsociado = query(
-        collection(db, "asociados"),
-        where("dni", "==", dni)
-      );
-
-      const asociadoSnap = await getDocs(qAsociado);
-
-      if (asociadoSnap.empty) {
+      // 🔹 1️⃣ Verificar que el DNI exista en ASOCIADOS
+      const asociadoData = await getAsociadoByDNI(dni);
+      if (!asociadoData) {
         setError(GENERIC_ERROR);
         return;
       }
 
-      // 2️⃣ Verificar que el usuario esté registrado (usuariosNuevos)
-      const qUsuario = query(
-        collection(db, "usuariosNuevos"),
-        where("dni", "==", dni)
-      );
-
-      const usuarioSnap = await getDocs(qUsuario);
-
-      if (usuarioSnap.empty) {
+      // 🔹 2️⃣ Verificar que el usuario exista en usuariosNuevos
+      const usuarioData = await getUsuarioByDNI(dni);
+      if (!usuarioData) {
         setError(GENERIC_ERROR);
         return;
       }
 
-      const usuarioData = usuarioSnap.docs[0].data();
-
-      // 3️⃣ Validar contraseña real
+      // 🔹 3️⃣ Validar contraseña
       if (usuarioData.password !== password) {
         setError(GENERIC_ERROR);
         return;
       }
 
-      // 4️⃣ Login exitoso
+      // 🔹 4️⃣ Login exitoso en Firebase
+      // Usamos un email ficticio basado en el DNI para Firebase Auth
+      const firebaseUser = await loginFirebaseUser(dni + "@demo.com", password);
+      if (!firebaseUser) {
+        setError("Error al autenticar Firebase");
+        return;
+      }
+
+      // 🔹 5️⃣ Guardar sesión local para PrivateRoute
       sessionStorage.setItem("logged", "true");
       sessionStorage.setItem("dni", dni);
       sessionStorage.setItem("numeroAsociado", usuarioData.numeroAsociado);
