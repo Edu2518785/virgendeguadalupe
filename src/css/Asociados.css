@@ -5,17 +5,13 @@
   gap: 24px;
   padding: 24px;
 
-  /* 🔑 CLAVES */
-  min-height: calc(100vh - 70px); /* respeta navbar */
+  min-height: calc(100vh - 70px);
   height: auto;
   width: 100%;
-
-  /* 🔑 deja ver el fondo global (imagen o gradiente) */
   background: transparent;
 
   box-sizing: border-box;
   font-family: "Inter", system-ui, sans-serif;
-
   overflow-y: visible;
 }
 
@@ -26,9 +22,59 @@
   padding: 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   color: white;
+  flex-wrap: wrap;
+}
+
+/* ================= CHECKBOX MODERNOS ================= */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ocultamos checkbox nativo */
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 2px solid #6b7280;
+  background: #111827;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s ease;
+}
+
+/* check */
+.checkbox-label input[type="checkbox"]::before {
+  content: "✔";
+  font-size: 12px;
+  color: white;
+  transform: scale(0);
+  transition: transform 0.15s ease-in-out;
+}
+
+/* checked */
+.checkbox-label input[type="checkbox"]:checked {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.checkbox-label input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+/* hover */
+.checkbox-label:hover input[type="checkbox"] {
+  border-color: #3b82f6;
 }
 
 /* ================= GRID ASOCIADOS ================= */
@@ -36,8 +82,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
-
-  /* 🔑 permite crecer y scrollear */
   padding-bottom: 40px;
 }
 
@@ -147,5 +191,9 @@
 @media (max-width: 900px) {
   .detalle-asociado {
     grid-template-columns: 1fr;
+  }
+
+  .filtros-asociados {
+    gap: 16px;
   }
 }
