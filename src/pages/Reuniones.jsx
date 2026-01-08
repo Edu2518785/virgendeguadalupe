@@ -15,7 +15,7 @@ import "../css/Reuniones.css";
 
 function Reuniones() {
   const user = useOutletContext();
-  const rol = user.rol;
+  const rol = user?.rol;
 
   const [reuniones, setReuniones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,9 +28,15 @@ function Reuniones() {
 
   useEffect(() => {
     const fetchReuniones = async () => {
-      const q = query(collection(db, "reuniones"), orderBy("fecha", "desc"));
+      const q = query(
+        collection(db, "reuniones"),
+        orderBy("fechaTS", "desc")
+      );
       const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const data = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
       setReuniones(data);
       setLoading(false);
     };
@@ -40,44 +46,41 @@ function Reuniones() {
   const abrirReunion = async () => {
     if (!window.confirm("¿Seguro que deseas abrir una nueva reunión?")) return;
 
-    const reunionAbierta = reuniones.find(r => r.cerrada === false);
-    if (reunionAbierta) {
-      alert("Ya hay una reunión abierta.");
-      setSelectedReunion(reunionAbierta);
-      return;
-    }
-
     const snapAsociados = await getDocs(collection(db, "asociados"));
+    if (snapAsociados.empty) return;
+
     const listaAsociados = snapAsociados.docs.map(d => ({
       id: d.id,
-      numeroAsociado: d.data().numeroAsociado,
-      nombres: d.data().nombres,
-      apellidoPaterno: d.data().apellidoPaterno,
-      apellidoMaterno: d.data().apellidoMaterno,
+      numeroAsociado: String(d.data().numeroAsociado ?? ""),
+      nombres: d.data().nombres ?? "",
+      apellidoPaterno: d.data().apellidoPaterno ?? "",
+      apellidoMaterno: d.data().apellidoMaterno ?? "",
       estado: "falta"
     }));
 
-    const fecha = new Date().toLocaleDateString();
-    const hora = new Date().toLocaleTimeString();
+    const ahora = new Date();
 
     const docRef = await addDoc(collection(db, "reuniones"), {
-      fecha,
-      hora,
+      fecha: ahora.toLocaleDateString(),
+      hora: ahora.toLocaleTimeString(),
+      fechaTS: serverTimestamp(),
       asistencia: listaAsociados,
       cerrada: false
     });
 
     const nueva = {
       id: docRef.id,
-      fecha,
-      hora,
+      fecha: ahora.toLocaleDateString(),
+      hora: ahora.toLocaleTimeString(),
+      fechaTS: ahora,
       asistencia: listaAsociados,
-      cerrada: false
+      cerrada: false,
+      editando: false
     };
 
-    // ✅ CLAVE: inicializar estado original
     asistenciaOriginalRef.current = JSON.parse(JSON.stringify(listaAsociados));
-
+    setBusquedaAsociado("");
+    setFiltroEstado("");
     setReuniones(prev => [nueva, ...prev]);
     setSelectedReunion(nueva);
   };
@@ -89,85 +92,27 @@ function Reuniones() {
   };
 
   const guardarCambios = async () => {
-    if (!window.confirm("¿Seguro que deseas guardar los cambios?")) return;
-
-    const reunionRef = doc(db, "reuniones", selectedReunion.id);
-    await updateDoc(reunionRef, {
+    const ref = doc(db, "reuniones", selectedReunion.id);
+    await updateDoc(ref, {
       asistencia: selectedReunion.asistencia
     });
 
-    for (let i = 0; i < selectedReunion.asistencia.length; i++) {
-      const antes = asistenciaOriginalRef.current[i];
-      const despues = selectedReunion.asistencia[i];
-
-      if (antes.estado !== despues.estado) {
-        await addDoc(collection(db, "cambios"), {
-          reunionId: selectedReunion.id,
-          fechaReunion: selectedReunion.fecha,
-          fechaCambio: new Date().toLocaleDateString(),
-          horaCambio: new Date().toLocaleTimeString(),
-          realizadoPor: user.nombres,
-          numeroAsociadoEditor: user.numeroAsociado,
-          asociadoModificado: despues.numeroAsociado,
-          cambio: `Cambió de ${antes.estado} a ${despues.estado}`,
-          timestamp: serverTimestamp()
-        });
-      }
-    }
-
     setSelectedReunion(prev => ({ ...prev, editando: false }));
-    setReuniones(prev =>
-      prev.map(r =>
-        r.id === selectedReunion.id
-          ? { ...selectedReunion, editando: false }
-          : r
-      )
-    );
   };
 
   const cancelarEdicion = () => {
-    if (!window.confirm("¿Seguro que deseas cancelar los cambios?")) return;
-
-    const restaurada = {
-      ...selectedReunion,
+    setSelectedReunion(prev => ({
+      ...prev,
       asistencia: asistenciaOriginalRef.current,
       editando: false
-    };
-
-    setSelectedReunion(restaurada);
-    setReuniones(prev =>
-      prev.map(r => (r.id === restaurada.id ? restaurada : r))
-    );
+    }));
   };
 
   const cerrarReunion = async () => {
-    if (!window.confirm("¿Seguro que deseas cerrar la reunión?")) return;
+    const ref = doc(db, "reuniones", selectedReunion.id);
+    await updateDoc(ref, { cerrada: true });
 
-    const reunionRef = doc(db, "reuniones", selectedReunion.id);
-
-    // ✅ REGISTRA CAMBIOS TAMBIÉN DESDE MÓVIL / TABLET
-    for (let i = 0; i < selectedReunion.asistencia.length; i++) {
-      const antes = asistenciaOriginalRef.current[i];
-      const despues = selectedReunion.asistencia[i];
-
-      if (antes && antes.estado !== despues.estado) {
-        await addDoc(collection(db, "cambios"), {
-          reunionId: selectedReunion.id,
-          fechaReunion: selectedReunion.fecha,
-          fechaCambio: new Date().toLocaleDateString(),
-          horaCambio: new Date().toLocaleTimeString(),
-          realizadoPor: user.nombres,
-          numeroAsociadoEditor: user.numeroAsociado,
-          asociadoModificado: despues.numeroAsociado,
-          cambio: `Cambió de ${antes.estado} a ${despues.estado}`,
-          timestamp: serverTimestamp()
-        });
-      }
-    }
-
-    await updateDoc(reunionRef, { cerrada: true });
-
-    setSelectedReunion(prev => ({ ...prev, cerrada: true, editando: false }));
+    setSelectedReunion(prev => ({ ...prev, cerrada: true }));
     setReuniones(prev =>
       prev.map(r =>
         r.id === selectedReunion.id ? { ...r, cerrada: true } : r
@@ -176,13 +121,14 @@ function Reuniones() {
   };
 
   const reunionesFiltradas = reuniones.filter(r =>
-    r.fecha.includes(busquedaFecha)
+    r.fecha?.includes(busquedaFecha)
   );
 
   const asistentesFiltrados =
     selectedReunion?.asistencia.filter(a => {
       const okNum =
-        !busquedaAsociado || a.numeroAsociado.includes(busquedaAsociado);
+        !busquedaAsociado ||
+        String(a.numeroAsociado).includes(busquedaAsociado);
       const okEstado = !filtroEstado || a.estado === filtroEstado;
       return okNum && okEstado;
     }) || [];
@@ -191,7 +137,7 @@ function Reuniones() {
 
   return (
     <div className="reu-page-container">
-      {/* PANEL IZQUIERDO */}
+      {/* ================= COLUMNA IZQUIERDA ================= */}
       <div className="reu-card-left">
         <button
           className="reu-btn-primary"
@@ -201,14 +147,12 @@ function Reuniones() {
           ➕ Abrir nueva reunión
         </button>
 
-        <div className="reu-search-wrapper">
-          <input
-            className="reu-input-dark"
-            placeholder="🔍 Buscar fecha..."
-            value={busquedaFecha}
-            onChange={e => setBusquedaFecha(e.target.value)}
-          />
-        </div>
+        <input
+          className="reu-input-dark"
+          placeholder="🔍 Buscar fecha..."
+          value={busquedaFecha}
+          onChange={e => setBusquedaFecha(e.target.value)}
+        />
 
         <ul className="reu-list">
           {reunionesFiltradas.map(r => (
@@ -221,6 +165,8 @@ function Reuniones() {
                 asistenciaOriginalRef.current = JSON.parse(
                   JSON.stringify(r.asistencia)
                 );
+                setBusquedaAsociado("");
+                setFiltroEstado("");
                 setSelectedReunion({
                   ...r,
                   asistencia: [...r.asistencia],
@@ -228,32 +174,27 @@ function Reuniones() {
                 });
               }}
             >
-              <div className="reu-item-info">
-                <strong>{r.fecha}</strong>
-                <span
-                  className={`reu-status-tag ${
-                    r.cerrada ? "is-closed" : "is-open"
-                  }`}
-                >
-                  {r.cerrada ? "Cerrada" : "En curso"}
-                </span>
-              </div>
+              <strong>{r.fecha}</strong>
+              <span
+                className={`reu-status-tag ${
+                  r.cerrada ? "is-closed" : "is-open"
+                }`}
+              >
+                {r.cerrada ? "Cerrada" : "En curso"}
+              </span>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* PANEL DERECHO */}
+      {/* ================= COLUMNA DERECHA ================= */}
       <div className="reu-card-right">
         {selectedReunion ? (
           <>
             <div className="reu-detail-header">
-              <div className="reu-title-group">
+              <div>
                 <h3>Asistencia: {selectedReunion.fecha}</h3>
-                <p>
-                  {selectedReunion.hora} •{" "}
-                  {selectedReunion.cerrada ? "Cerrada" : "Abierta"}
-                </p>
+                <p>{selectedReunion.hora}</p>
               </div>
 
               <div className="reu-header-actions">
@@ -263,39 +204,6 @@ function Reuniones() {
                   value={busquedaAsociado}
                   onChange={e => setBusquedaAsociado(e.target.value)}
                 />
-
-                {selectedReunion.cerrada &&
-                  (rol === "administrador" || rol === "asistencia") &&
-                  (!selectedReunion.editando ? (
-                    <button
-                      className="reu-btn-edit"
-                      onClick={() =>
-                        setSelectedReunion(prev => ({
-                          ...prev,
-                          editando: true
-                        }))
-                      }
-                    >
-                      ✏️ Editar Historia
-                    </button>
-                  ) : (
-                    <div className="reu-edit-group">
-                      <button
-                        type="button"
-                        className="reu-btn-save"
-                        onClick={guardarCambios}
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        type="button"
-                        className="reu-btn-cancel"
-                        onClick={cancelarEdicion}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  ))}
               </div>
             </div>
 
@@ -309,56 +217,34 @@ function Reuniones() {
                   </tr>
                 </thead>
                 <tbody>
-                  {asistentesFiltrados.length > 0 ? (
-                    asistentesFiltrados.map((a, i) => {
-                      const originalIndex =
-                        selectedReunion.asistencia.findIndex(
-                          asoc => asoc.id === a.id
-                        );
-                      return (
-                        <tr key={a.id || i}>
-                          <td>
-                            <strong>{a.numeroAsociado}</strong>
-                          </td>
-                          <td>
-                            {a.nombres} {a.apellidoPaterno}{" "}
-                            {a.apellidoMaterno}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {!selectedReunion.cerrada ||
-                            selectedReunion.editando ? (
-                              <select
-                                className={`reu-select-state state-${a.estado}`}
-                                value={a.estado}
-                                onChange={e =>
-                                  cambiarEstado(
-                                    originalIndex,
-                                    e.target.value
-                                  )
-                                }
-                              >
-                                <option value="falta">🔴 Falta</option>
-                                <option value="puntual">🟢 Puntual</option>
-                                <option value="tarde">🟡 Tarde</option>
-                              </select>
-                            ) : (
-                              <span
-                                className={`reu-badge state-${a.estado}`}
-                              >
-                                {a.estado}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="3" className="reu-empty">
-                        No se encontraron resultados
+                  {asistentesFiltrados.map((a, i) => (
+                    <tr key={a.id}>
+                      <td>{a.numeroAsociado}</td>
+                      <td>
+                        {a.nombres} {a.apellidoPaterno}{" "}
+                        {a.apellidoMaterno}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {!selectedReunion.cerrada ? (
+                          <select
+                            className={`reu-select-state state-${a.estado}`}
+                            value={a.estado}
+                            onChange={e =>
+                              cambiarEstado(i, e.target.value)
+                            }
+                          >
+                            <option value="falta">Falta</option>
+                            <option value="puntual">Puntual</option>
+                            <option value="tarde">Tarde</option>
+                          </select>
+                        ) : (
+                          <span className={`reu-badge state-${a.estado}`}>
+                            {a.estado}
+                          </span>
+                        )}
                       </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -376,10 +262,7 @@ function Reuniones() {
         ) : (
           <div className="reu-no-selection">
             <div className="reu-placeholder-icon">📅</div>
-            <p>
-              Selecciona una reunión del historial para ver el detalle o
-              gestionar la asistencia.
-            </p>
+            <p>Selecciona una reunión para ver la asistencia</p>
           </div>
         )}
       </div>
