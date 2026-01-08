@@ -22,27 +22,22 @@ function Reuniones() {
   const [selectedReunion, setSelectedReunion] = useState(null);
   const [busquedaFecha, setBusquedaFecha] = useState("");
   const [busquedaAsociado, setBusquedaAsociado] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("");
 
   const asistenciaOriginalRef = useRef([]);
 
+  /* ================= CARGAR REUNIONES ================= */
   useEffect(() => {
     const fetchReuniones = async () => {
-      const q = query(
-        collection(db, "reuniones"),
-        orderBy("fechaTS", "desc")
-      );
+      const q = query(collection(db, "reuniones"), orderBy("fechaTS", "desc"));
       const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }));
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setReuniones(data);
       setLoading(false);
     };
     fetchReuniones();
   }, []);
 
+  /* ================= ABRIR NUEVA REUNIÓN ================= */
   const abrirReunion = async () => {
     if (!window.confirm("¿Seguro que deseas abrir una nueva reunión?")) return;
 
@@ -79,27 +74,48 @@ function Reuniones() {
     };
 
     asistenciaOriginalRef.current = JSON.parse(JSON.stringify(listaAsociados));
-    setBusquedaAsociado("");
-    setFiltroEstado("");
     setReuniones(prev => [nueva, ...prev]);
     setSelectedReunion(nueva);
   };
 
+  /* ================= CAMBIAR ESTADO ================= */
   const cambiarEstado = (index, nuevoEstado) => {
     const copia = [...selectedReunion.asistencia];
     copia[index] = { ...copia[index], estado: nuevoEstado };
     setSelectedReunion(prev => ({ ...prev, asistencia: copia }));
   };
 
+  /* ================= GUARDAR CAMBIOS + HISTORIAL ================= */
   const guardarCambios = async () => {
-    const ref = doc(db, "reuniones", selectedReunion.id);
-    await updateDoc(ref, {
+    const reunionRef = doc(db, "reuniones", selectedReunion.id);
+
+    await updateDoc(reunionRef, {
       asistencia: selectedReunion.asistencia
     });
+
+    for (let i = 0; i < selectedReunion.asistencia.length; i++) {
+      const antes = asistenciaOriginalRef.current[i];
+      const despues = selectedReunion.asistencia[i];
+
+      if (antes.estado !== despues.estado) {
+        await addDoc(collection(db, "cambios"), {
+          reunionId: selectedReunion.id,
+          fechaReunion: selectedReunion.fecha,
+          fechaCambio: new Date().toLocaleDateString(),
+          horaCambio: new Date().toLocaleTimeString(),
+          realizadoPor: `${user.nombres}`,
+          numeroAsociadoEditor: user.numeroAsociado,
+          asociadoModificado: despues.numeroAsociado,
+          cambio: `Cambió de ${antes.estado} a ${despues.estado}`,
+          timestamp: serverTimestamp()
+        });
+      }
+    }
 
     setSelectedReunion(prev => ({ ...prev, editando: false }));
   };
 
+  /* ================= CANCELAR EDICIÓN ================= */
   const cancelarEdicion = () => {
     setSelectedReunion(prev => ({
       ...prev,
@@ -108,16 +124,14 @@ function Reuniones() {
     }));
   };
 
+  /* ================= CERRAR REUNIÓN ================= */
   const cerrarReunion = async () => {
-    const ref = doc(db, "reuniones", selectedReunion.id);
-    await updateDoc(ref, { cerrada: true });
+    if (!window.confirm("¿Cerrar definitivamente la reunión?")) return;
 
-    setSelectedReunion(prev => ({ ...prev, cerrada: true }));
-    setReuniones(prev =>
-      prev.map(r =>
-        r.id === selectedReunion.id ? { ...r, cerrada: true } : r
-      )
-    );
+    const reunionRef = doc(db, "reuniones", selectedReunion.id);
+    await updateDoc(reunionRef, { cerrada: true });
+
+    setSelectedReunion(prev => ({ ...prev, cerrada: true, editando: false }));
   };
 
   const reunionesFiltradas = reuniones.filter(r =>
@@ -125,19 +139,16 @@ function Reuniones() {
   );
 
   const asistentesFiltrados =
-    selectedReunion?.asistencia.filter(a => {
-      const okNum =
-        !busquedaAsociado ||
-        String(a.numeroAsociado).includes(busquedaAsociado);
-      const okEstado = !filtroEstado || a.estado === filtroEstado;
-      return okNum && okEstado;
-    }) || [];
+    selectedReunion?.asistencia.filter(a =>
+      !busquedaAsociado ||
+      String(a.numeroAsociado).includes(busquedaAsociado)
+    ) || [];
 
   if (loading) return <p>Cargando reuniones...</p>;
 
   return (
     <div className="reu-page-container">
-      {/* ================= COLUMNA IZQUIERDA ================= */}
+      {/* ================= LEFT ================= */}
       <div className="reu-card-left">
         <button
           className="reu-btn-primary"
@@ -158,28 +169,14 @@ function Reuniones() {
           {reunionesFiltradas.map(r => (
             <li
               key={r.id}
-              className={`reu-list-item ${
-                selectedReunion?.id === r.id ? "is-selected" : ""
-              }`}
+              className={`reu-list-item ${selectedReunion?.id === r.id ? "is-selected" : ""}`}
               onClick={() => {
-                asistenciaOriginalRef.current = JSON.parse(
-                  JSON.stringify(r.asistencia)
-                );
-                setBusquedaAsociado("");
-                setFiltroEstado("");
-                setSelectedReunion({
-                  ...r,
-                  asistencia: [...r.asistencia],
-                  editando: false
-                });
+                asistenciaOriginalRef.current = JSON.parse(JSON.stringify(r.asistencia));
+                setSelectedReunion({ ...r, asistencia: [...r.asistencia], editando: false });
               }}
             >
               <strong>{r.fecha}</strong>
-              <span
-                className={`reu-status-tag ${
-                  r.cerrada ? "is-closed" : "is-open"
-                }`}
-              >
+              <span className={`reu-status-tag ${r.cerrada ? "is-closed" : "is-open"}`}>
                 {r.cerrada ? "Cerrada" : "En curso"}
               </span>
             </li>
@@ -187,25 +184,38 @@ function Reuniones() {
         </ul>
       </div>
 
-      {/* ================= COLUMNA DERECHA ================= */}
+      {/* ================= RIGHT ================= */}
       <div className="reu-card-right">
-        {selectedReunion ? (
+        {selectedReunion && (
           <>
             <div className="reu-detail-header">
-              <div>
-                <h3>Asistencia: {selectedReunion.fecha}</h3>
-                <p>{selectedReunion.hora}</p>
-              </div>
+              <h3>Asistencia {selectedReunion.fecha}</h3>
 
-              <div className="reu-header-actions">
-                <input
-                  className="reu-input-dark reu-input-small"
-                  placeholder="🔢 N° Asociado..."
-                  value={busquedaAsociado}
-                  onChange={e => setBusquedaAsociado(e.target.value)}
-                />
-              </div>
+              {selectedReunion.cerrada &&
+                (rol === "administrador" || rol === "asistencia") &&
+                !selectedReunion.editando && (
+                  <button
+                    className="reu-btn-edit"
+                    onClick={() => setSelectedReunion(prev => ({ ...prev, editando: true }))}
+                  >
+                    ✏️ Editar reunión
+                  </button>
+                )}
+
+              {selectedReunion.editando && (
+                <div className="reu-edit-group">
+                  <button className="reu-btn-save" onClick={guardarCambios}>Guardar</button>
+                  <button className="reu-btn-cancel" onClick={cancelarEdicion}>Cancelar</button>
+                </div>
+              )}
             </div>
+
+            <input
+              className="reu-input-dark reu-input-small"
+              placeholder="🔢 N° Asociado..."
+              value={busquedaAsociado}
+              onChange={e => setBusqedaAsociado(e.target.value)}
+            />
 
             <div className="reu-table-container">
               <table className="reu-table">
@@ -219,23 +229,18 @@ function Reuniones() {
                 <tbody>
                   {asistentesFiltrados.map((a, i) => (
                     <tr key={a.id}>
-                      <td>{a.numeroAsociado}</td>
-                      <td>
-                        {a.nombres} {a.apellidoPaterno}{" "}
-                        {a.apellidoMaterno}
-                      </td>
+                      <td><strong>{a.numeroAsociado}</strong></td>
+                      <td>{a.nombres} {a.apellidoPaterno} {a.apellidoMaterno}</td>
                       <td style={{ textAlign: "center" }}>
-                        {!selectedReunion.cerrada ? (
+                        {(!selectedReunion.cerrada || selectedReunion.editando) ? (
                           <select
                             className={`reu-select-state state-${a.estado}`}
                             value={a.estado}
-                            onChange={e =>
-                              cambiarEstado(i, e.target.value)
-                            }
+                            onChange={e => cambiarEstado(i, e.target.value)}
                           >
-                            <option value="falta">Falta</option>
-                            <option value="puntual">Puntual</option>
-                            <option value="tarde">Tarde</option>
+                            <option value="falta">🔴 Falta</option>
+                            <option value="puntual">🟢 Puntual</option>
+                            <option value="tarde">🟡 Tarde</option>
                           </select>
                         ) : (
                           <span className={`reu-badge state-${a.estado}`}>
@@ -251,19 +256,11 @@ function Reuniones() {
 
             {!selectedReunion.cerrada &&
               (rol === "administrador" || rol === "asistencia") && (
-                <button
-                  className="reu-btn-close-final"
-                  onClick={cerrarReunion}
-                >
+                <button className="reu-btn-close-final" onClick={cerrarReunion}>
                   Cerrar reunión definitivamente
                 </button>
               )}
           </>
-        ) : (
-          <div className="reu-no-selection">
-            <div className="reu-placeholder-icon">📅</div>
-            <p>Selecciona una reunión para ver la asistencia</p>
-          </div>
         )}
       </div>
     </div>
