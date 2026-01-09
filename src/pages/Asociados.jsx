@@ -17,7 +17,7 @@ function Asociados() {
   const [soloConDeudaGlobal, setSoloConDeudaGlobal] = useState(false);
 
   const [deudaGlobal, setDeudaGlobal] = useState("");
-  const [pagosGlobales, setPagosGlobales] = useState([]);
+  const [pagosGlobales, setPagosGlobales] = useState({});
 
   useEffect(() => {
     if (!["administrador", "asistencia", "directiva"].includes(user?.rol)) {
@@ -40,21 +40,26 @@ function Asociados() {
         // DEUDA GLOBAL
         const snapGlobal = await getDocs(collection(db, "deudaGlobal"));
         if (!snapGlobal.empty) {
-          setDeudaGlobal(snapGlobal.docs[0].data().monto || "");
+          const globalData = snapGlobal.docs[0].data();
+          setDeudaGlobal(globalData.monto || "");
         } else {
           setDeudaGlobal("");
         }
 
-        // PAGOS GLOBALES (🔥 CORREGIDO)
+        // PAGOS GLOBALES
         const pagosSnap = await getDocs(
           collection(db, "pagosGlobales", "actual", "asociados")
         );
 
-        const pagos = pagosSnap.docs.map(doc => doc.data().numeroAsociado);
-        setPagosGlobales(pagos);
+        const pagosMap = {};
+        pagosSnap.forEach(doc => {
+          pagosMap[doc.id] = true; // doc.id = numeroAsociado
+        });
+
+        setPagosGlobales(pagosMap);
 
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al cargar asociados:", error);
       } finally {
         setLoading(false);
       }
@@ -63,7 +68,7 @@ function Asociados() {
     load();
   }, [user, navigate]);
 
-  const mostrar = v => (v && v !== "" ? v : "-------------");
+  const mostrar = valor => (valor && valor !== "" ? valor : "-------------");
 
   const asociadosFiltrados = lista.filter(a => {
     const coincideNumero =
@@ -73,12 +78,12 @@ function Asociados() {
     const tieneDeudaPersonal =
       a.deuda && a.deuda !== "" && a.deuda !== "0" && a.deuda !== 0;
 
-    const pagoGlobal = pagosGlobales.includes(a.numeroAsociado);
+    const pagoGlobal = pagosGlobales[a.numeroAsociado];
 
-    const cumplePersonal = !soloConDeuda || tieneDeudaPersonal;
-    const cumpleGlobal = !soloConDeudaGlobal || (deudaGlobal && !pagoGlobal);
+    const cumpleDeudaPersonal = !soloConDeuda || tieneDeudaPersonal;
+    const cumpleDeudaGlobal = !soloConDeudaGlobal || (deudaGlobal !== "" && !pagoGlobal);
 
-    return coincideNumero && cumplePersonal && cumpleGlobal;
+    return coincideNumero && cumpleDeudaPersonal && cumpleDeudaGlobal;
   });
 
   if (loading)
@@ -91,65 +96,104 @@ function Asociados() {
   return (
     <div className="asociados-container">
       <div className="filtros-asociados">
-        <h2 style={{ color: "#fff" }}>
+        <h2 style={{ margin: 0, color: "#fff" }}>
           Asociados Registrados ({asociadosFiltrados.length})
         </h2>
 
         <div className="acciones-header">
           <input
             type="text"
+            className="input-busqueda"
             placeholder="🔍 Buscar por Nº de asociado..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
           />
 
-          <label>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={soloConDeuda}
               onChange={e => setSoloConDeuda(e.target.checked)}
             />
-            Solo deuda personal
+            Solo con deuda personal
           </label>
 
-          <label>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={soloConDeudaGlobal}
               onChange={e => setSoloConDeudaGlobal(e.target.checked)}
             />
-            Solo deuda global
+            Solo con deuda global
           </label>
         </div>
       </div>
 
       <div className="grid-asociados">
         {asociadosFiltrados.map(a => {
-          const pagoGlobal = pagosGlobales.includes(a.numeroAsociado);
+          const tieneDeuda =
+            a.deuda && a.deuda !== "" && a.deuda !== "0" && a.deuda !== 0;
+
+          const pagoGlobal = pagosGlobales[a.numeroAsociado];
 
           return (
             <div
               key={a.id}
-              className={`card-asociado ${selectedAsociado?.id === a.id ? "active" : ""}`}
-              onClick={() => setSelectedAsociado(a)}
+              className={`card-asociado ${
+                selectedAsociado?.id === a.id ? "active" : ""
+              }`}
+              onClick={() =>
+                setSelectedAsociado(prev =>
+                  prev?.id === a.id ? null : a
+                )
+              }
             >
               <div className="card-asociado-header">
-                <span>{a.nombres} {a.apellidoPaterno}</span>
-                <span>N° {a.numeroAsociado}</span>
+                <span className="nombre-asociado">
+                  {a.nombres} {a.apellidoPaterno} {a.apellidoMaterno}
+                </span>
+                <span className="badge-numero">N° {a.numeroAsociado}</span>
               </div>
 
               <div className="detalle-asociado">
-                <p>DNI: {mostrar(a.dni)}</p>
-                <p>Deuda personal: S/ {mostrar(a.deuda)}</p>
-                <p>
-                  Deuda global:{" "}
-                  {deudaGlobal === ""
-                    ? "No aplica"
-                    : pagoGlobal
-                    ? "PAGADO ✅"
-                    : "DEBE ❌"}
-                </p>
+                <div className="info-box">
+                  <span className="info-label">D.N.I.</span>
+                  <span className="info-value">{mostrar(a.dni)}</span>
+                </div>
+
+                <div className="info-box">
+                  <span className="info-label">Deuda personal</span>
+                  <span className={`info-value deuda-badge ${tieneDeuda ? "con-deuda" : "sin-deuda"}`}>
+                    S/ {mostrar(a.deuda)}
+                  </span>
+                </div>
+
+                <div className="info-box">
+                  <span className="info-label">Deuda general</span>
+                  <span className={`info-value ${pagoGlobal ? "sin-deuda" : "con-deuda"}`}>
+                    {deudaGlobal === ""
+                      ? "Sin colecta"
+                      : pagoGlobal
+                      ? "PAGÓ"
+                      : "DEBE"}
+                  </span>
+                </div>
               </div>
+
+              {selectedAsociado?.id === a.id && (
+                <div className="seccion-expandida">
+                  <hr />
+                  <div className="detalle-grid-completo">
+                    <div className="info-box"><span className="info-label">Fecha Ingreso</span><span className="info-value">{mostrar(a.fechaIngreso)}</span></div>
+                    <div className="info-box"><span className="info-label">F. Nacimiento</span><span className="info-value">{mostrar(a.fechaNacimiento)}</span></div>
+                    <div className="info-box"><span className="info-label">Departamento</span><span className="info-value">{mostrar(a.departamento)}</span></div>
+                    <div className="info-box"><span className="info-label">Provincia</span><span className="info-value">{mostrar(a.provincia)}</span></div>
+                    <div className="info-box"><span className="info-label">Distrito</span><span className="info-value">{mostrar(a.distrito)}</span></div>
+                    <div className="info-box"><span className="info-label">Grado</span><span className="info-value">{mostrar(a.gradoInstruccion)}</span></div>
+                    <div className="info-box"><span className="info-label">Estado Civil</span><span className="info-value">{mostrar(a.estadoCivil)}</span></div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

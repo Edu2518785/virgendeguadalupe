@@ -7,23 +7,32 @@ import "../css/Deuda.css";
 function Deuda() {
   const user = useOutletContext();
   const [deudaGlobal, setDeudaGlobal] = useState([]);
-  const [pagos, setPagos] = useState([]);
+  const [pagosGlobales, setPagosGlobales] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      const dg = await getDocs(collection(db, "deudaGlobal"));
-      setDeudaGlobal(dg.docs.map(d => d.data()));
+    const fetchData = async () => {
+      try {
+        const snap = await getDocs(collection(db, "deudaGlobal"));
+        const globalData = snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setDeudaGlobal(globalData);
 
-      const pg = await getDocs(
-        collection(db, "pagosGlobales", "actual", "asociados")
-      );
-      setPagos(pg.docs.map(d => d.data()));
+        const pagosSnap = await getDocs(
+          collection(db, "pagosGlobales", "actual", "asociados")
+        );
+        setPagosGlobales(pagosSnap.docs);
 
-      setLoading(false);
+      } catch (error) {
+        console.error("Error cargando deuda:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    load();
+    fetchData();
   }, []);
 
   if (!user || loading) return <p>Cargando...</p>;
@@ -34,17 +43,23 @@ function Deuda() {
 
       <p>
         <strong>Deuda personal:</strong>{" "}
-        {user.deuda && user.deuda !== "0" ? user.deuda : "Sin deuda 😊"}
+        {user.deuda && user.deuda !== "0"
+          ? user.deuda
+          : "Felicidades, no cuentas con ninguna deuda personal 😊"}
       </p>
 
       <p>
         <strong>Colecta general:</strong>{" "}
-        {deudaGlobal.length ? deudaGlobal.map(d => d.monto).join(" / ") : "No hay"}
+        {deudaGlobal.length > 0
+          ? deudaGlobal.map(d => d.monto).join(" / ")
+          : "No hay colecta activa"}
       </p>
 
-      <p>
-        <strong>Pagos registrados:</strong> {pagos.length}
-      </p>
+      {deudaGlobal.length > 0 && (
+        <p>
+          <strong>Pagos registrados:</strong> {pagosGlobales.length}
+        </p>
+      )}
     </div>
   );
 }
