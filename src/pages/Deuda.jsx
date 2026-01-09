@@ -8,11 +8,13 @@ function Deuda() {
   const user = useOutletContext();
   const [deudaGlobal, setDeudaGlobal] = useState([]);
   const [pagosGlobales, setPagosGlobales] = useState([]);
+  const [yaPagoGlobal, setYaPagoGlobal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // DEUDA GLOBAL
         const snap = await getDocs(collection(db, "deudaGlobal"));
         const globalData = snap.docs.map(doc => ({
           id: doc.id,
@@ -20,10 +22,25 @@ function Deuda() {
         }));
         setDeudaGlobal(globalData);
 
+        // PAGOS GLOBALES
         const pagosSnap = await getDocs(
           collection(db, "pagosGlobales", "actual", "asociados")
         );
-        setPagosGlobales(pagosSnap.docs);
+
+        const pagos = [];
+        let pagoEncontrado = false;
+
+        pagosSnap.forEach(doc => {
+          const data = doc.data();
+          pagos.push(data);
+
+          if (String(data.numeroAsociado) === String(user?.numeroAsociado)) {
+            pagoEncontrado = true;
+          }
+        });
+
+        setPagosGlobales(pagos);
+        setYaPagoGlobal(pagoEncontrado);
 
       } catch (error) {
         console.error("Error cargando deuda:", error);
@@ -32,8 +49,8 @@ function Deuda() {
       }
     };
 
-    fetchData();
-  }, []);
+    if (user) fetchData();
+  }, [user]);
 
   if (!user || loading) return <p>Cargando...</p>;
 
@@ -50,16 +67,12 @@ function Deuda() {
 
       <p>
         <strong>Colecta general:</strong>{" "}
-        {deudaGlobal.length > 0
-          ? deudaGlobal.map(d => d.monto).join(" / ")
-          : "No hay colecta activa"}
+        {deudaGlobal.length === 0
+          ? "No hay colecta activa"
+          : yaPagoGlobal
+          ? "Usted ya colaboró con la colecta general ✅"
+          : deudaGlobal.map(d => d.monto).join(" / ")}
       </p>
-
-      {deudaGlobal.length > 0 && (
-        <p>
-          <strong>Pagos registrados:</strong> {pagosGlobales.length}
-        </p>
-      )}
     </div>
   );
 }

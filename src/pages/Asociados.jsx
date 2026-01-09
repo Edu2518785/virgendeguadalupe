@@ -46,14 +46,17 @@ function Asociados() {
           setDeudaGlobal("");
         }
 
-        // PAGOS GLOBALES
+        // PAGOS GLOBALES (USANDO CAMPO numeroAsociado)
         const pagosSnap = await getDocs(
           collection(db, "pagosGlobales", "actual", "asociados")
         );
 
         const pagosMap = {};
         pagosSnap.forEach(doc => {
-          pagosMap[doc.id] = true; // doc.id = numeroAsociado
+          const data = doc.data();
+          if (data.numeroAsociado !== undefined) {
+            pagosMap[String(data.numeroAsociado)] = true;
+          }
         });
 
         setPagosGlobales(pagosMap);
@@ -78,10 +81,11 @@ function Asociados() {
     const tieneDeudaPersonal =
       a.deuda && a.deuda !== "" && a.deuda !== "0" && a.deuda !== 0;
 
-    const pagoGlobal = pagosGlobales[a.numeroAsociado];
+    const pagoGlobal = pagosGlobales[String(a.numeroAsociado)];
 
     const cumpleDeudaPersonal = !soloConDeuda || tieneDeudaPersonal;
-    const cumpleDeudaGlobal = !soloConDeudaGlobal || (deudaGlobal !== "" && !pagoGlobal);
+    const cumpleDeudaGlobal =
+      !soloConDeudaGlobal || (deudaGlobal !== "" && !pagoGlobal);
 
     return coincideNumero && cumpleDeudaPersonal && cumpleDeudaGlobal;
   });
@@ -134,7 +138,7 @@ function Asociados() {
           const tieneDeuda =
             a.deuda && a.deuda !== "" && a.deuda !== "0" && a.deuda !== 0;
 
-          const pagoGlobal = pagosGlobales[a.numeroAsociado];
+          const pagoGlobal = pagosGlobales[String(a.numeroAsociado)];
 
           return (
             <div
