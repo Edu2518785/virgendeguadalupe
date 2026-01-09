@@ -17,9 +17,10 @@ function Asociados() {
   const [soloConDeudaGlobal, setSoloConDeudaGlobal] = useState(false);
 
   const [deudaGlobal, setDeudaGlobal] = useState("");
+  const [pagosGlobales, setPagosGlobales] = useState({});
 
   useEffect(() => {
-    if (!["administrador", "asistencia", "directiva"].includes(user.rol)) {
+    if (!["administrador", "asistencia", "directiva"].includes(user?.rol)) {
       navigate("/home", { replace: true });
       return;
     }
@@ -36,12 +37,26 @@ function Asociados() {
         }));
         setLista(data);
 
-        // DEUDA GLOBAL (campo CORRECTO: monto)
+        // DEUDA GLOBAL
         const snapGlobal = await getDocs(collection(db, "deudaGlobal"));
         if (!snapGlobal.empty) {
           const globalData = snapGlobal.docs[0].data();
           setDeudaGlobal(globalData.monto || "");
+        } else {
+          setDeudaGlobal("");
         }
+
+        // PAGOS GLOBALES
+        const pagosSnap = await getDocs(
+          collection(db, "pagosGlobales", "actual", "asociados")
+        );
+
+        const pagosMap = {};
+        pagosSnap.forEach(doc => {
+          pagosMap[doc.id] = true; // doc.id = numeroAsociado
+        });
+
+        setPagosGlobales(pagosMap);
 
       } catch (error) {
         console.error("Error al cargar asociados:", error);
@@ -63,8 +78,10 @@ function Asociados() {
     const tieneDeudaPersonal =
       a.deuda && a.deuda !== "" && a.deuda !== "0" && a.deuda !== 0;
 
+    const pagoGlobal = pagosGlobales[a.numeroAsociado];
+
     const cumpleDeudaPersonal = !soloConDeuda || tieneDeudaPersonal;
-    const cumpleDeudaGlobal = !soloConDeudaGlobal || deudaGlobal !== "";
+    const cumpleDeudaGlobal = !soloConDeudaGlobal || (deudaGlobal !== "" && !pagoGlobal);
 
     return coincideNumero && cumpleDeudaPersonal && cumpleDeudaGlobal;
   });
@@ -117,6 +134,8 @@ function Asociados() {
           const tieneDeuda =
             a.deuda && a.deuda !== "" && a.deuda !== "0" && a.deuda !== 0;
 
+          const pagoGlobal = pagosGlobales[a.numeroAsociado];
+
           return (
             <div
               key={a.id}
@@ -151,8 +170,12 @@ function Asociados() {
 
                 <div className="info-box">
                   <span className="info-label">Deuda general</span>
-                  <span className="info-value">
-                    {deudaGlobal !== "" ? deudaGlobal : "Sin deuda general"}
+                  <span className={`info-value ${pagoGlobal ? "sin-deuda" : "con-deuda"}`}>
+                    {deudaGlobal === ""
+                      ? "Sin colecta"
+                      : pagoGlobal
+                      ? "PAGÓ"
+                      : "DEBE"}
                   </span>
                 </div>
               </div>
