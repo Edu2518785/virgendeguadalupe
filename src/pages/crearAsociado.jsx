@@ -73,6 +73,15 @@ const CrearAsociado = () => {
     return snap.exists();
   };
 
+  // 🔹 FUNCIÓN NUEVA (NO QUITA NADA)
+  const limpiarAsociado = (obj) => {
+    const limpio = {};
+    for (const key in obj) {
+      limpio[key] = obj[key] === "" ? null : obj[key];
+    }
+    return limpio;
+  };
+
   const guardarAsociado = async (e) => {
     e.preventDefault();
 
@@ -88,7 +97,13 @@ const CrearAsociado = () => {
       return;
     }
 
-    await setDoc(doc(db, "asociados", asociado.numeroAsociado), asociado);
+    // 🔹 APLICAMOS LIMPIEZA AQUÍ
+    const asociadoLimpio = limpiarAsociado(asociado);
+
+    await setDoc(
+      doc(db, "asociados", asociado.numeroAsociado),
+      asociadoLimpio
+    );
 
     alert("✅ Asociado creado correctamente");
 
@@ -229,7 +244,6 @@ const CrearAsociado = () => {
           </ul>
         </section>
 
-        {/* ✅ BOTÓN CORREGIDO */}
         <button type="submit" className="submit-btn">
           Guardar Asociado
         </button>
