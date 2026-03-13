@@ -41,21 +41,11 @@ function Reuniones() {
   const abrirReunion = async () => {
     if (!window.confirm("¿Seguro que deseas abrir una nueva reunión?")) return;
 
-    // 🔥🔥🔥 FIX: NO permitir más de una reunión abierta
     const reunionAbierta = reuniones.find(r => r.cerrada === false);
     if (reunionAbierta) {
       alert("⚠️ Ya hay una reunión aperturada. No se puede crear otra.");
-      asistenciaOriginalRef.current = JSON.parse(
-        JSON.stringify(reunionAbierta.asistencia)
-      );
-      setSelectedReunion({
-        ...reunionAbierta,
-        asistencia: [...reunionAbierta.asistencia],
-        editando: false
-      });
       return;
     }
-    // 🔥🔥🔥 FIN FIX
 
     const snapAsociados = await getDocs(collection(db, "asociados"));
     if (snapAsociados.empty) return;
@@ -70,7 +60,6 @@ function Reuniones() {
     }));
 
     const ahora = new Date();
-
     const docRef = await addDoc(collection(db, "reuniones"), {
       fecha: ahora.toLocaleDateString(),
       hora: ahora.toLocaleTimeString(),
@@ -79,151 +68,114 @@ function Reuniones() {
       cerrada: false
     });
 
-    asistenciaOriginalRef.current = JSON.parse(JSON.stringify(listaAsociados));
-
     const nueva = {
       id: docRef.id,
       fecha: ahora.toLocaleDateString(),
       hora: ahora.toLocaleTimeString(),
-      fechaTS: ahora,
       asistencia: listaAsociados,
-      cerrada: false,
-      editando: false
+      cerrada: false
     };
 
     setReuniones(prev => [nueva, ...prev]);
-    setSelectedReunion(nueva);
+    setSelectedReunion({ ...nueva, editando: false });
+    asistenciaOriginalRef.current = JSON.parse(JSON.stringify(listaAsociados));
   };
 
   /* ================= CAMBIAR ESTADO ================= */
-  const cambiarEstado = (index, nuevoEstado) => {
-    const copia = [...selectedReunion.asistencia];
-    copia[index] = { ...copia[index], estado: nuevoEstado };
-    setSelectedReunion(prev => ({ ...prev, asistencia: copia }));
+  const cambiarEstado = (numeroAsociado, nuevoEstado) => {
+    setSelectedReunion(prev => ({
+      ...prev,
+      asistencia: prev.asistencia.map(a => 
+        a.numeroAsociado === numeroAsociado 
+          ? { ...a, estado: nuevoEstado } 
+          : a
+      )
+    }));
   };
 
   /* ================= GUARDAR CAMBIOS ================= */
   const guardarCambios = async () => {
-    const reunionRef = doc(db, "reuniones", selectedReunion.id);
+    try {
+      const reunionRef = doc(db, "reuniones", selectedReunion.id);
 
-    await updateDoc(reunionRef, {
-      asistencia: selectedReunion.asistencia
-    });
+      await updateDoc(reunionRef, {
+        asistencia: selectedReunion.asistencia
+      });
 
-    for (const despues of selectedReunion.asistencia) {
-      const antes = asistenciaOriginalRef.current.find(
-        a => a.numeroAsociado === despues.numeroAsociado
-      );
+      for (const despues of selectedReunion.asistencia) {
+        const antes = asistenciaOriginalRef.current.find(
+          a => a.numeroAsociado === despues.numeroAsociado
+        );
 
-      if (antes && antes.estado !== despues.estado) {
-        await addDoc(collection(db, "cambios"), {
-          reunionId: selectedReunion.id,
-          fechaReunion: selectedReunion.fecha,
-          fechaCambio: new Date().toLocaleDateString(),
-          horaCambio: new Date().toLocaleTimeString(),
-          realizadoPor: user.nombres,
-          numeroAsociadoEditor: user.numeroAsociado,
-          asociadoModificado: despues.numeroAsociado,
-          estadoAnterior: antes.estado,
-          estadoNuevo: despues.estado,
-          timestamp: serverTimestamp()
-        });
+        if (antes && antes.estado !== despues.estado) {
+          await addDoc(collection(db, "cambios"), {
+            reunionId: selectedReunion.id,
+            fechaCambio: new Date().toLocaleDateString(),
+            horaCambio: new Date().toLocaleTimeString(),
+            realizadoPor: user?.nombres || "Usuario", 
+            asociadoModificado: despues.numeroAsociado,
+            estadoAnterior: antes.estado,
+            estadoNuevo: despues.estado,
+            timestamp: serverTimestamp()
+          });
+        }
       }
+
+      asistenciaOriginalRef.current = JSON.parse(JSON.stringify(selectedReunion.asistencia));
+      setSelectedReunion(prev => ({ ...prev, editando: false }));
+      setReuniones(prev => prev.map(r => r.id === selectedReunion.id ? { ...r, asistencia: selectedReunion.asistencia } : r));
+      
+      alert("✅ Cambios guardados correctamente.");
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al guardar la reunión. Revisa la consola F12.");
     }
-
-    asistenciaOriginalRef.current = JSON.parse(
-      JSON.stringify(selectedReunion.asistencia)
-    );
-
-    setSelectedReunion(prev => ({ ...prev, editando: false }));
-  };
-
-  /* ================= CANCELAR EDICIÓN ================= */
-  const cancelarEdicion = () => {
-    setSelectedReunion(prev => ({
-      ...prev,
-      asistencia: JSON.parse(JSON.stringify(asistenciaOriginalRef.current)),
-      editando: false
-    }));
   };
 
   /* ================= CERRAR REUNIÓN ================= */
   const cerrarReunion = async () => {
     if (!window.confirm("¿Cerrar definitivamente la reunión?")) return;
 
-    const reunionRef = doc(db, "reuniones", selectedReunion.id);
+    try {
+      const reunionRef = doc(db, "reuniones", selectedReunion.id);
+      
+      await updateDoc(reunionRef, { 
+        cerrada: true,
+        asistencia: selectedReunion.asistencia 
+      });
 
-    await updateDoc(reunionRef, {
-      asistencia: selectedReunion.asistencia,
-      cerrada: true
-    });
-
-    asistenciaOriginalRef.current = JSON.parse(
-      JSON.stringify(selectedReunion.asistencia)
-    );
-
-    setSelectedReunion(prev => ({
-      ...prev,
-      cerrada: true,
-      editando: false
-    }));
+      setSelectedReunion(prev => ({ ...prev, cerrada: true, editando: false }));
+      setReuniones(prev => prev.map(r => r.id === selectedReunion.id ? { ...r, cerrada: true, asistencia: selectedReunion.asistencia } : r));
+    } catch (error) {
+      console.error("Error al cerrar la reunión:", error);
+    }
   };
 
-  const reunionesFiltradas = reuniones.filter(r =>
-    r.fecha?.includes(busquedaFecha)
-  );
-
-  const asistentesFiltrados =
-    selectedReunion?.asistencia.filter(a =>
-      !busquedaAsociado ||
-      String(a.numeroAsociado).includes(busquedaAsociado)
-    ) || [];
+  const reunionesFiltradas = reuniones.filter(r => r.fecha?.includes(busquedaFecha));
+  const asistentesFiltrados = selectedReunion?.asistencia.filter(a =>
+    !busquedaAsociado || String(a.numeroAsociado).includes(busquedaAsociado)
+  ) || [];
 
   if (loading) return <p>Cargando reuniones...</p>;
 
   return (
     <div className="reu-page-container">
-      {/* ================= LEFT ================= */}
       <div className="reu-card-left">
-        <button
-          className="reu-btn-primary"
-          onClick={abrirReunion}
-          disabled={!(rol === "administrador" || rol === "asistencia")}
-        >
-          ➕ Abrir nueva reunión
-        </button>
-
-        <input
-          className="reu-input-dark"
-          placeholder="🔍 Buscar fecha..."
-          value={busquedaFecha}
-          onChange={e => setBusquedaFecha(e.target.value)}
-        />
-
+        {/* Validacion: Solo rol 'asistencia' puede abrir nueva reunion */}
+        {rol === "asistencia" && (
+            <button className="reu-btn-primary" onClick={abrirReunion}>
+            ➕ Abrir nueva reunión
+            </button>
+        )}
+        <input className="reu-input-dark" placeholder="🔍 Buscar fecha..." value={busquedaFecha} onChange={e => setBusquedaFecha(e.target.value)} />
         <ul className="reu-list">
           {reunionesFiltradas.map(r => (
-            <li
-              key={r.id}
-              className={`reu-list-item ${
-                selectedReunion?.id === r.id ? "is-selected" : ""
-              }`}
-              onClick={() => {
-                asistenciaOriginalRef.current = JSON.parse(
-                  JSON.stringify(r.asistencia)
-                );
-                setSelectedReunion({
-                  ...r,
-                  asistencia: [...r.asistencia],
-                  editando: false
-                });
-              }}
-            >
+            <li key={r.id} className={`reu-list-item ${selectedReunion?.id === r.id ? "is-selected" : ""}`} onClick={() => {
+              asistenciaOriginalRef.current = JSON.parse(JSON.stringify(r.asistencia));
+              setSelectedReunion({ ...r, editando: false });
+            }}>
               <strong>{r.fecha}</strong>
-              <span
-                className={`reu-status-tag ${
-                  r.cerrada ? "is-closed" : "is-open"
-                }`}
-              >
+              <span className={`reu-status-tag ${r.cerrada ? "is-closed" : "is-open"}`}>
                 {r.cerrada ? "Cerrada" : "En curso"}
               </span>
             </li>
@@ -231,83 +183,43 @@ function Reuniones() {
         </ul>
       </div>
 
-      {/* ================= RIGHT ================= */}
       <div className="reu-card-right">
         {selectedReunion && (
           <>
             <div className="reu-detail-header">
               <h3>Asistencia {selectedReunion.fecha}</h3>
-
-              {selectedReunion.cerrada &&
-                (rol === "administrador" || rol === "asistencia") &&
-                !selectedReunion.editando && (
-                  <button
-                    className="reu-btn-edit"
-                    onClick={() =>
-                      setSelectedReunion(prev => ({
-                        ...prev,
-                        editando: true
-                      }))
-                    }
-                  >
-                    ✏️ Editar reunión
-                  </button>
-                )}
-
+              {/* Validacion: Solo rol 'asistencia' ve el boton editar */}
+              {rol === "asistencia" && selectedReunion.cerrada && !selectedReunion.editando && (
+                <button className="reu-btn-edit" onClick={() => setSelectedReunion(prev => ({ ...prev, editando: true }))}>✏️ Editar</button>
+              )}
               {selectedReunion.editando && (
                 <div className="reu-edit-group">
-                  <button className="reu-btn-save" onClick={guardarCambios}>
-                    Guardar
-                  </button>
-                  <button className="reu-btn-cancel" onClick={cancelarEdicion}>
-                    Cancelar
-                  </button>
+                  <button className="reu-btn-save" onClick={guardarCambios}>Guardar</button>
+                  <button className="reu-btn-cancel" onClick={() => setSelectedReunion(prev => ({ ...prev, editando: false, asistencia: asistenciaOriginalRef.current }))}>Cancelar</button>
                 </div>
               )}
             </div>
 
-            <input
-              className="reu-input-dark reu-input-small"
-              placeholder="🔢 N° Asociado..."
-              value={busquedaAsociado}
-              onChange={e => setBusquedaAsociado(e.target.value)}
-            />
+            <input className="reu-input-dark reu-input-small" placeholder="🔢 N° Asociado..." value={busquedaAsociado} onChange={e => setBusquedaAsociado(e.target.value)} />
 
             <div className="reu-table-container">
               <table className="reu-table">
-                <thead>
-                  <tr>
-                    <th>N°</th>
-                    <th>Nombre del Asociado</th>
-                    <th style={{ textAlign: "center" }}>Estado</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>N°</th><th>Nombre</th><th>Estado</th></tr></thead>
                 <tbody>
-                  {asistentesFiltrados.map((a, i) => (
+                  {asistentesFiltrados.map(a => (
                     <tr key={a.numeroAsociado}>
                       <td><strong>{a.numeroAsociado}</strong></td>
+                      <td>{a.nombres} {a.apellidoPaterno}</td>
                       <td>
-                        {a.nombres} {a.apellidoPaterno}{" "}
-                        {a.apellidoMaterno}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {!selectedReunion.cerrada ||
-                        selectedReunion.editando ? (
-                          <select
-                            className={`reu-select-state state-${a.estado}`}
-                            value={a.estado}
-                            onChange={e =>
-                              cambiarEstado(i, e.target.value)
-                            }
-                          >
+                        {/* Validacion: Solo editable si NO está cerrada O si el rol es asistencia y está editando */}
+                        {(!selectedReunion.cerrada || (selectedReunion.editando && rol === "asistencia")) ? (
+                          <select className={`reu-select-state state-${a.estado}`} value={a.estado} onChange={e => cambiarEstado(a.numeroAsociado, e.target.value)}>
                             <option value="falta">🔴 Falta</option>
                             <option value="puntual">🟢 Puntual</option>
                             <option value="tarde">🟡 Tarde</option>
                           </select>
                         ) : (
-                          <span className={`reu-badge state-${a.estado}`}>
-                            {a.estado}
-                          </span>
+                          <span className={`reu-badge state-${a.estado}`}>{a.estado}</span>
                         )}
                       </td>
                     </tr>
@@ -316,15 +228,10 @@ function Reuniones() {
               </table>
             </div>
 
-            {!selectedReunion.cerrada &&
-              (rol === "administrador" || rol === "asistencia") && (
-                <button
-                  className="reu-btn-close-final"
-                  onClick={cerrarReunion}
-                >
-                  Cerrar reunión definitivamente
-                </button>
-              )}
+            {/* Validacion: Boton de cierre solo para rol asistencia */}
+            {rol === "asistencia" && !selectedReunion.cerrada && (
+              <button className="reu-btn-close-final" onClick={cerrarReunion}>Cerrar reunión definitivamente</button>
+            )}
           </>
         )}
       </div>

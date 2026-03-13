@@ -7,7 +7,7 @@ import "../css/Deuda.css";
 function Deuda() {
   const user = useOutletContext();
   const [deudaGlobal, setDeudaGlobal] = useState([]);
-  const [pagosGlobales, setPagosGlobales] = useState([]);
+  //const [pagosGlobales, setPagosGlobales] = useState([]);
   const [yaPagoGlobal, setYaPagoGlobal] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +39,7 @@ function Deuda() {
           }
         });
 
-        setPagosGlobales(pagos);
+        //setPagosGlobales(pagos);
         setYaPagoGlobal(pagoEncontrado);
 
       } catch (error) {
