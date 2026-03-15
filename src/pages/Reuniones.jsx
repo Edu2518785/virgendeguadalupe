@@ -44,7 +44,7 @@ function Reuniones() {
 
     const reunionAbierta = reuniones.find(r => r.cerrada === false);
     if (reunionAbierta) {
-      alert("⚠️ Ya hay una reunión aperturada. No se puede crear otra.");
+      alert("⚠️ Ya hay una reunión aperturada.");
       return;
     }
 
@@ -102,11 +102,13 @@ function Reuniones() {
       const reunionRef = doc(db, "reuniones", selectedReunion.id);
       await updateDoc(reunionRef, { asistencia: selectedReunion.asistencia });
 
+      // Comparamos contra la referencia limpia tomada al seleccionar la reunión
       for (const despues of selectedReunion.asistencia) {
         const antes = asistenciaOriginalRef.current.find(
           a => a.numeroAsociado === despues.numeroAsociado
         );
 
+        // SOLO se registra si realmente el estado cambió
         if (antes && antes.estado !== despues.estado) {
           await addDoc(collection(db, "cambios"), {
             reunionId: selectedReunion.id,
@@ -127,7 +129,7 @@ function Reuniones() {
       alert("✅ Cambios guardados correctamente.");
     } catch (error) {
       console.error("Error al guardar:", error);
-      alert("Error al guardar la reunión.");
+      alert("Error al guardar.");
     }
   };
 
@@ -138,15 +140,12 @@ function Reuniones() {
 
     try {
       const reunionRef = doc(db, "reuniones", selectedReunion.id);
-      await updateDoc(reunionRef, { 
-        cerrada: true,
-        asistencia: selectedReunion.asistencia 
-      });
+      await updateDoc(reunionRef, { cerrada: true, asistencia: selectedReunion.asistencia });
 
       setSelectedReunion(prev => ({ ...prev, cerrada: true, editando: false }));
       setReuniones(prev => prev.map(r => r.id === selectedReunion.id ? { ...r, cerrada: true, asistencia: selectedReunion.asistencia } : r));
     } catch (error) {
-      console.error("Error al cerrar la reunión:", error);
+      console.error("Error al cerrar:", error);
     }
   };
 
@@ -155,23 +154,23 @@ function Reuniones() {
     !busquedaAsociado || String(a.numeroAsociado).includes(busquedaAsociado)
   ) || [];
 
-  if (loading) return <p>Cargando reuniones...</p>;
+  if (loading) return <p>Cargando...</p>;
 
   return (
     <div className="reu-page-container">
       <div className="reu-card-left">
         {rol === "asistencia" && (
-          <button className="reu-btn-primary" onClick={abrirReunion}>
-            ➕ Abrir nueva reunión
-          </button>
+          <button className="reu-btn-primary" onClick={abrirReunion}>➕ Abrir nueva reunión</button>
         )}
         <input className="reu-input-dark" placeholder="🔍 Buscar fecha..." value={busquedaFecha} onChange={e => setBusquedaFecha(e.target.value)} />
         <ul className="reu-list">
           {reunionesFiltradas.map(r => (
-            <li key={r.id} className={`reu-list-item ${selectedReunion?.id === r.id ? "is-selected" : ""}`} onClick={() => {
-              asistenciaOriginalRef.current = JSON.parse(JSON.stringify(r.asistencia));
-              setSelectedReunion({ ...r, editando: false });
-            }}>
+            <li key={r.id} className={`reu-list-item ${selectedReunion?.id === r.id ? "is-selected" : ""}`} 
+              onClick={() => {
+                // AQUÍ ESTÁ LA CORRECCIÓN: Clonado exacto al seleccionar
+                asistenciaOriginalRef.current = JSON.parse(JSON.stringify(r.asistencia));
+                setSelectedReunion({ ...r, editando: false });
+              }}>
               <strong>{r.fecha}</strong>
               <span className={`reu-status-tag ${r.cerrada ? "is-closed" : "is-open"}`}>
                 {r.cerrada ? "Cerrada" : "En curso"}
@@ -187,12 +186,12 @@ function Reuniones() {
             <div className="reu-detail-header">
               <h3>Asistencia {selectedReunion.fecha}</h3>
               {rol === "asistencia" && selectedReunion.cerrada && !selectedReunion.editando && (
-                <button className="reu-btn-edit" onClick={() => setSelectedReunion(prev => ({ ...prev, editando: true }))}>✏️ Editar</button>
+                <button className="reu-btn-edit" onClick={() => setSelectedReunion(p => ({ ...p, editando: true }))}>✏️ Editar</button>
               )}
               {selectedReunion.editando && (
                 <div className="reu-edit-group">
                   <button className="reu-btn-save" onClick={guardarCambios}>Guardar</button>
-                  <button className="reu-btn-cancel" onClick={() => setSelectedReunion(prev => ({ ...prev, editando: false, asistencia: asistenciaOriginalRef.current }))}>Cancelar</button>
+                  <button className="reu-btn-cancel" onClick={() => setSelectedReunion(p => ({ ...p, editando: false, asistencia: asistenciaOriginalRef.current }))}>Cancelar</button>
                 </div>
               )}
             </div>
@@ -215,7 +214,7 @@ function Reuniones() {
                             <option value="tarde">🟡 Tarde</option>
                           </select>
                         ) : (
-                          <span className={`reu-badge state-${a.estado}`}>{a.estado}</span>
+                          <span className={`reu-badge state-${a.estado}`}>{a.estado.toUpperCase()}</span>
                         )}
                       </td>
                     </tr>
